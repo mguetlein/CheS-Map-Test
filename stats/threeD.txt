@@ -1,0 +1,5 @@
+Dataset,Compounds,CDK 3D Structure Generation,OpenBabel 3D Structure Generation
+PBDE_LogVP.flat.sdf,34.0,5834.0,141958.0
+caco2.flat.sdf,100.0,245936.0,1212372.0
+cox2.flat.sdf,467.0,82791.0,6028047.0
+CPDBAS_v5d_1547_20Nov2008.ob.sdf,1508.0,1712335,null

@@ -1,0 +1,5 @@
+Dataset,Compounds,Features,SimpleKMeans (WEKA),k-Means - Cascade (WEKA),k-Means - Cascade (WEKA) 3-5 r3,FarthestFirst (WEKA),Expectation Maximization (WEKA),Expectation Maximization (WEKA) 5,Cobweb (WEKA),Hierarchical (WEKA),k-Means (R),k-Means - Cascade (R),Hierarchical (R),Hierarchical - Dynamic Tree Cut (R)
+PBDE_LogVP.flat.sdf,34.0,274 CDK,444.0,725.0,53.0,51.0,2216.0,85.0,39.0,27.0,258.0,833.0,240.0,431.0
+caco2.flat.sdf,100.0,274 CDK,124.0,3990.0,288.0,49.0,5881.0,448.0,60.0,178.0,546.0,1875.0,277.0,452.0
+cox2.flat.sdf,467.0,274 CDK,673.0,35309.0,1854.0,219.0,325743.0,3586.0,442.0,2184.0,1540.0,7174.0,994.0,1485.0
+CPDBAS_v5d_1547_20Nov2008.ob.sdf,1508.0,274 CDK,5830.0,276454,22877.0,1397.0,null,29132.0,5515.0,42507.0,5977.0,59568.0,19368.0,17354.0

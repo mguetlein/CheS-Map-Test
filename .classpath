@@ -5,5 +5,10 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/CheS-Map"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/JavaLib"/>
+	<classpathentry kind="lib" path="/home/martin/workspace/CheS-Map/lib/weka-3-6-6/weka.jar"/>
+	<classpathentry kind="lib" path="/home/martin/workspace/CheS-Map/lib/commons-math-1.2/commons-math-1.2.jar"/>
+	<classpathentry kind="lib" path="/home/martin/workspace/CheS-Map/lib/commons-lang-2.4/commons-lang-2.4.jar"/>
+	<classpathentry kind="lib" path="/home/martin/workspace/CheS-Map/lib/cdk-jar-1.4.7/cdk-1.4.7_mod.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/CheS-View"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

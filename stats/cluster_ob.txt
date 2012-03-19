@@ -1,0 +1,5 @@
+Dataset,Compounds,Features,SimpleKMeans (WEKA),k-Means - Cascade (WEKA),k-Means - Cascade (WEKA) 3-5 r3,FarthestFirst (WEKA),Expectation Maximization (WEKA),Expectation Maximization (WEKA) 5,Cobweb (WEKA),Hierarchical (WEKA),k-Means (R),k-Means - Cascade (R),Hierarchical (R),Hierarchical - Dynamic Tree Cut (R)
+PBDE_LogVP.flat.sdf,34.0,15 LinFrag (f=1),204.0,256.0,43.0,38.0,806.0,19.0,73.0,19.0,885.0,4030.0,216.0,441.0
+caco2.flat.sdf,100.0,450 LinFrag (f=5),528.0,21069.0,2058.0,66.0,166529.0,2521.0,1246.0,140.0,477.0,3882.0,455.0,692.0
+cox2.flat.sdf,467.0,416 LinFrag (f=23),904.0,58791.0,5923.0,114.0,1523573.0,8794.0,11778.0,1937.0,1127.0,14491.0,2135.0,1946.0
+CPDBAS_v5d_1547_20Nov2008.ob.sdf,1508.0,201 LinFrag (f=75),4558.0,175646,19328.0,1357.0,null,30340.0,64104.0,16330.0,2873.0,36461.0,21038.0,15958.0

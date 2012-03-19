@@ -1,17 +1,15 @@
 package test;
 
-import gui.AlignWizardPanel;
-import gui.Build3DWizardPanel;
-import gui.ClusterWizardPanel;
 import gui.DatasetWizardPanel;
-import gui.EmbedWizardPanel;
-import gui.TaskPanel;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import main.BinHandler;
 import main.CheSMapping;
+import main.PropHandler;
+import main.Settings;
 import main.TaskProvider;
 
 import org.junit.Assert;
@@ -19,6 +17,17 @@ import org.junit.Test;
 import org.openscience.cdk.isomorphism.MCSComputer;
 
 import util.ArrayUtil;
+import util.TestUtil.CDKPropertiesCreator;
+import util.TestUtil.CDKPropertiesCreator.Subset;
+import util.TestUtil.CDKStructuralPropertiesCreator;
+import util.TestUtil.CoinFlipPropertySetFilter;
+import util.TestUtil.InternalPropertiesCreator;
+import util.TestUtil.MoleculePropertySetCreator;
+import util.TestUtil.MoleculePropertySetFilter;
+import util.TestUtil.NoPropertySetFilter;
+import util.TestUtil.OBDescriptorCreator;
+import util.TestUtil.OBStructuralPropertiesCreator;
+import util.TestUtil.StructuralPropertiesCreator;
 import util.ThreadUtil;
 import alg.Algorithm;
 import alg.AlgorithmException.ClusterException;
@@ -34,170 +43,78 @@ import alg.cluster.NoClusterer;
 import alg.embed3d.Random3DEmbedder;
 import alg.embed3d.ThreeDEmbedder;
 import data.ClusteringData;
-import data.DatasetFile;
 import data.DefaultFeatureComputer;
-import data.IntegratedProperty;
-import data.cdk.CDKPropertySet;
-import data.fragments.MatchEngine;
-import data.fragments.StructuralFragmentProperties;
-import data.fragments.StructuralFragments;
 import dataInterface.MoleculeProperty;
-import dataInterface.MoleculeProperty.Type;
 import dataInterface.MoleculePropertySet;
 import dataInterface.MoleculePropertyUtil;
 
 public class CheSMappingTest
 {
-	static Random random = new Random();
+	public static String DATA_DIR = "data/";
+	static Random random;
 
 	static
 	{
-		long seed = random.nextLong();
+		long seed = new Random().nextLong();
 		System.err.println("seed: " + seed);
 		random = new Random(seed);
+
+		PropHandler.init(false);
+		BinHandler.init();
+		Settings.CACHING_ENABLED = true;
+		MCSComputer.DEBUG = false;
 	}
 
-	static String FILES[] = new String[] { "chang.sdf", "heyl.sdf", "caco2.sdf", "NCTRER_v4b_232_15Feb2008.sdf",
-			"bbp2.csv", "1compound.sdf", "3compounds.sdf" };
-	static ThreeDBuilder BUILDERS[] = Build3DWizardPanel.BUILDERS;
-	static MoleculePropertySetCreator FEATURE_SETS[] = { new InternalPropertiesCreator(), new CDKPropertiesCreator(),
-			new OBStructuralPropertiesCreator(), new CDKStructuralPropertiesCreator(),
-			new RandomStructuralPropertiesCreator() };
-	static MoleculePropertySetFilter FEATURE_FILTER[] = { new NoPropertySetFilter(), new CoinFlipPropertySetFilter() };
-	static DatasetClusterer CLUSTERERS[] = ClusterWizardPanel.CLUSTERERS;
-	static ThreeDEmbedder EMBEDDERS[] = EmbedWizardPanel.EMBEDDERS;
-	static ThreeDAligner ALIGNERS[] = AlignWizardPanel.ALIGNER;
+	static String FILES[] = new String[] { "PBDE_LogVP.ob3d.sdf", "chang.sdf", "heyl.sdf", "caco2.sdf",
+			"NCTRER_v4b_232_15Feb2008.sdf", "bbp2.csv", "1compound.sdf", "3compounds.sdf",
+			"http://apps.ideaconsult.net:8080/ambit2/dataset/272?max=50" };
+	static ThreeDBuilder BUILDERS[] = ThreeDBuilder.BUILDERS;
+	static MoleculePropertySetCreator FEATURE_SETS[] = new MoleculePropertySetCreator[] {
+			new InternalPropertiesCreator(), new CDKPropertiesCreator(), new OBDescriptorCreator(),
+			new OBStructuralPropertiesCreator(), new CDKStructuralPropertiesCreator() };
+	static MoleculePropertySetFilter FEATURE_FILTER[] = new MoleculePropertySetFilter[] { new NoPropertySetFilter(),
+			new CoinFlipPropertySetFilter(random) };
+	static DatasetClusterer CLUSTERERS[] = DatasetClusterer.CLUSTERERS;
+	static ThreeDEmbedder EMBEDDERS[] = ThreeDEmbedder.EMBEDDERS;
+	static ThreeDAligner ALIGNERS[] = ThreeDAligner.ALIGNER;
+	static boolean RANDOM_BUILD_ALIGN = false;
 
 	static
 	{
-		MCSComputer.DEBUG = true;
+		//BASIC
+		FILES = new String[] { "basicTestSet.sdf" };
+		BUILDERS = new ThreeDBuilder[] { UseOrigStructures.INSTANCE };
+		FEATURE_SETS = new MoleculePropertySetCreator[] { new CDKPropertiesCreator(Subset.WithoutIonizationPotential),
+				new OBDescriptorCreator(), new OBStructuralPropertiesCreator(), new CDKStructuralPropertiesCreator() };
+		FEATURE_FILTER = new MoleculePropertySetFilter[] { new CoinFlipPropertySetFilter(random) };
+		RANDOM_BUILD_ALIGN = true;
 
-		//		//		// modifications for smaller tests
-		//		FILES = new String[] { "caco2.sdf" };
-		FILES = new String[] { "heyl.sdf" };
-		//FILES = new String[] { "chang.sdf", "heyl.sdf" };
-		BUILDERS = new ThreeDBuilder[] { new UseOrigStructures() };
-		//		//		FEATURE_SETS = new MoleculePropertySetCreator[] { new InternalPropertiesCreator() };
-		//		//		//		FEATURE_SETS = new MoleculePropertySetCreator[] { new InternalPropertiesCreator(), new CDKPropertiesCreator(),
-		//		//		//				new OBStructuralPropertiesCreator() };
-		//		FEATURE_SETS = new MoleculePropertySetCreator[] { new CDKPropertiesCreator() };
-		//		//		//		//		FEATURE_SETS = new MoleculePropertySetCreator[] { new StructuralPropertiesCreator() };
-		//		//		FEATURE_FILTER = new MoleculePropertySetFilter[] { new CoinFlipPropertySetFilter() };
+		//CUSTOM
+		//		//				FILES = new String[] { "caco2.sdf" };
+		//		FILES = new String[] { "10compounds.sdf" };//, "1compound.sdf", "3compounds.sdf", "heyl.sdf", "chang.sdf", "caco2.sdf" };
+		//		//		FILES = new String[] {  "heyl.sdf" };
+		//		//FILES = new String[] { "chang.sdf", "heyl.sdf" };
+		//		BUILDERS = new ThreeDBuilder[] { UseOrigStructures.INSTANCE };
+		//		//		//		FEATURE_SETS = new MoleculePropertySetCreator[] { new InternalPropertiesCreator() };
+		//		//		//		//		FEATURE_SETS = new MoleculePropertySetCreator[] { new InternalPropertiesCreator(), new CDKPropertiesCreator(),
+		//		//		//		//				new OBStructuralPropertiesCreator() };
+		//		FEATURE_SETS = new MoleculePropertySetCreator[] { new CDKPropertiesCreator(Subset.WithoutIonizationPotential) };
+		//		//		//		//		//		FEATURE_SETS = new MoleculePropertySetCreator[] { new StructuralPropertiesCreator() };
+		//		//		//		FEATURE_FILTER = new MoleculePropertySetFilter[] { new CoinFlipPropertySetFilter() };
 		//		FEATURE_FILTER = new MoleculePropertySetFilter[] { new NoPropertySetFilter() };
-		//		//		//		//CLUSTERERS = new DatasetClusterer[] { ClusterWizardPanel.CLUSTERERS[2] }; // cascadeK
-		//		CLUSTERERS = new DatasetClusterer[] { new NoClusterer() };
-		CLUSTERERS = new DatasetClusterer[] { ClusterWizardPanel.getDefaultClusterer() };
-		//		//		CLUSTERERS = new DatasetClusterer[] { WekaClusterer.WEKA_CLUSTERER[0] };
-		EMBEDDERS = new ThreeDEmbedder[] { EmbedWizardPanel.getDefaultEmbedder() };
-		//		EMBEDDERS = new ThreeDEmbedder[] { new Random3DEmbedder() };
-		//		//		//		//EMBEDDERS = new ThreeDEmbedder[] { new AbstractRTo3DEmbedder.PCAFeature3DEmbedder() };
-		//		//		EMBEDDERS = new ThreeDEmbedder[] { EMBEDDERS[1] }; // weka pca
-		ALIGNERS = new ThreeDAligner[] { new NoAligner() };
-		//		//		//		ALIGNERS = new ThreeDAligner[] { new MaxFragAligner() };
-		//		ALIGNERS = new ThreeDAligner[] { new MCSAligner() };
-	}
-
-	interface MoleculePropertySetFilter
-	{
-		public MoleculePropertySet[] filterSet(MoleculePropertySet[] set);
-	}
-
-	static class NoPropertySetFilter implements MoleculePropertySetFilter
-	{
-		@Override
-		public MoleculePropertySet[] filterSet(MoleculePropertySet[] set)
-		{
-			return set;
-		}
-	}
-
-	static class CoinFlipPropertySetFilter implements MoleculePropertySetFilter
-	{
-		@Override
-		public MoleculePropertySet[] filterSet(MoleculePropertySet[] set)
-		{
-			if (random.nextBoolean()) // return just one prop
-				return new MoleculePropertySet[] { set[random.nextInt(set.length)] };
-
-			List<MoleculePropertySet> l = new ArrayList<MoleculePropertySet>();
-			for (MoleculePropertySet p : set)
-				if (random.nextBoolean())
-					l.add(p);
-
-			if (l.size() == 0)
-				return new MoleculePropertySet[] { set[random.nextInt(set.length)] };
-
-			MoleculePropertySet[] a = new MoleculePropertySet[l.size()];
-			return l.toArray(a);
-		}
-	}
-
-	interface MoleculePropertySetCreator
-	{
-		public MoleculePropertySet[] getSet(DatasetFile dataset);
-	}
-
-	static class InternalPropertiesCreator implements MoleculePropertySetCreator
-	{
-		public MoleculePropertySet[] getSet(DatasetFile dataset)
-		{
-			List<MoleculePropertySet> l = new ArrayList<MoleculePropertySet>();
-			for (IntegratedProperty p : dataset.getIntegratedProperties(false))
-				if (p.getType() == Type.NOMINAL || p.getType() == Type.NUMERIC)
-					l.add(p);
-			MoleculePropertySet[] a = new MoleculePropertySet[l.size()];
-			return l.toArray(a);
-		}
-	}
-
-	static class CDKPropertiesCreator implements MoleculePropertySetCreator
-	{
-		public MoleculePropertySet[] getSet(DatasetFile dataset)
-		{
-			return CDKPropertySet.NUMERIC_DESCRIPTORS;
-		}
-	}
-
-	static class StructuralPropertiesCreator implements MoleculePropertySetCreator
-	{
-		public MoleculePropertySet[] getSet(DatasetFile dataset)
-		{
-			return StructuralFragments.instance.getSets();
-		}
-	}
-
-	static class OBStructuralPropertiesCreator extends StructuralPropertiesCreator
-	{
-		@Override
-		public MoleculePropertySet[] getSet(DatasetFile dataset)
-		{
-			StructuralFragmentProperties.resetDefaults();
-			StructuralFragmentProperties.setMatchEngine(MatchEngine.OpenBabel);
-			return super.getSet(dataset);
-		}
-	}
-
-	static class CDKStructuralPropertiesCreator extends StructuralPropertiesCreator
-	{
-		@Override
-		public MoleculePropertySet[] getSet(DatasetFile dataset)
-		{
-			StructuralFragmentProperties.resetDefaults();
-			StructuralFragmentProperties.setMatchEngine(MatchEngine.CDK);
-			return super.getSet(dataset);
-		}
-	}
-
-	static class RandomStructuralPropertiesCreator extends StructuralPropertiesCreator
-	{
-		@Override
-		public MoleculePropertySet[] getSet(DatasetFile dataset)
-		{
-			StructuralFragmentProperties.setMatchEngine(random.nextBoolean() ? MatchEngine.CDK : MatchEngine.OpenBabel);
-			StructuralFragmentProperties.setMinFrequency(1 + random.nextInt(50));
-			StructuralFragmentProperties.setSkipOmniFragments(random.nextBoolean());
-			return super.getSet(dataset);
-		}
+		//		//		//		//		//CLUSTERERS = new DatasetClusterer[] { ClusterWizardPanel.CLUSTERERS[2] }; // cascadeK
+		//		//		CLUSTERERS = new DatasetClusterer[] { new NoClusterer() };
+		//		//CLUSTERERS = new DatasetClusterer[] { ClusterWizardPanel.getDefaultClusterer() };
+		//		//		CLUSTERERS = new DatasetClusterer[] { ClusterWizardPanel.getDefaultClusterer() };
+		//		CLUSTERERS = new DatasetClusterer[] { DatasetClusterer.CLUSTERERS[8] };
+		//		//		//		CLUSTERERS = new DatasetClusterer[] { WekaClusterer.WEKA_CLUSTERER[0] };
+		//		//EMBEDDERS = new ThreeDEmbedder[] { EmbedWizardPanel.getDefaultEmbedder() };
+		//		//		EMBEDDERS = new ThreeDEmbedder[] { new Random3DEmbedder() };
+		//		EMBEDDERS = new ThreeDEmbedder[] { Sammon3DEmbedder.INSTANCE };
+		//		//		//		EMBEDDERS = new ThreeDEmbedder[] { EMBEDDERS[1] }; // weka pca
+		//		ALIGNERS = new ThreeDAligner[] { NoAligner.INSTANCE };
+		//		//		//		//		ALIGNERS = new ThreeDAligner[] { new MaxFragAligner() };
+		//		//		ALIGNERS = new ThreeDAligner[] { new MCSAligner() };
 	}
 
 	@Test
@@ -205,10 +122,11 @@ public class CheSMappingTest
 	{
 		TaskProvider.registerThread("Ches-Mapper-Task");
 		TaskProvider.task().getPanel();
-		TaskPanel.PRINT_VERBOSE_MESSAGES = true;
+		//TaskPanel.PRINT_VERBOSE_MESSAGES = true;
 
-		int n = FILES.length * BUILDERS.length * FEATURE_SETS.length * FEATURE_FILTER.length * CLUSTERERS.length
-				* EMBEDDERS.length * ALIGNERS.length;
+		int n = FILES.length * FEATURE_SETS.length * FEATURE_FILTER.length * CLUSTERERS.length * EMBEDDERS.length;
+		if (!RANDOM_BUILD_ALIGN)
+			n *= BUILDERS.length * ALIGNERS.length;
 
 		int indices[] = new int[n];
 		for (int i = 0; i < indices.length; i++)
@@ -224,8 +142,8 @@ public class CheSMappingTest
 			int fileIndex = j / max;
 
 			j = i % max;
-			max = max / BUILDERS.length;
-			int builderIndex = j / max;
+			max = max / (RANDOM_BUILD_ALIGN ? 1 : BUILDERS.length);
+			int builderIndex = RANDOM_BUILD_ALIGN ? random.nextInt(BUILDERS.length) : (j / max);
 
 			j = i % max;
 			max = max / FEATURE_SETS.length;
@@ -244,8 +162,8 @@ public class CheSMappingTest
 			int embedIndex = j / max;
 
 			j = i % max;
-			max = max / ALIGNERS.length;
-			int alignerIndex = j / max;
+			max = max / (RANDOM_BUILD_ALIGN ? 1 : ALIGNERS.length);
+			int alignerIndex = RANDOM_BUILD_ALIGN ? random.nextInt(ALIGNERS.length) : (j / max);
 
 			System.err.println("\n\n\nt> " + (k + 1) + "/" + n);
 			System.err.println("t> " + fileIndex + " " + builderIndex + " " + featureIndex + " " + filterIndex + " "
@@ -269,15 +187,25 @@ public class CheSMappingTest
 
 			if (aligner instanceof MaxFragAligner && !(featureCreator instanceof StructuralPropertiesCreator))
 			{
-				System.err.println("t> skipping: no structural features for max-frag alignment");
-				continue;
+				if (RANDOM_BUILD_ALIGN)
+				{
+					System.err.println("t> replace with no-aligner: no structural features for max-frag alignment");
+					aligner = NoAligner.INSTANCE;
+				}
+				else
+				{
+					System.err.println("t> skipping: no structural features for max-frag alignment");
+					continue;
+				}
 			}
 
 			DatasetWizardPanel datasetProvider = new DatasetWizardPanel(null);
-			datasetProvider.load(CheSMappingTest.class.getResource("data/" + file).getFile());
+			//datasetProvider.load(CheSMappingTest.class.getResource("data/" + file).getFile());
+			datasetProvider.load(DATA_DIR + file);
 			ThreadUtil.sleep(100);
 			while (datasetProvider.getDatasetFile() == null || datasetProvider.isLoading())
 				ThreadUtil.sleep(100);
+			Assert.assertEquals(datasetProvider.getDatasetFile().getFullName(), file);
 
 			//			DatasetProvider datasetProvider = new DatasetProvider()
 			//			{

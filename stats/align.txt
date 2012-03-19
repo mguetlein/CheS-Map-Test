@@ -1,0 +1,5 @@
+Dataset,Compounds,Cluster*,Maximum Common Subgraph (MCS) Aligner,Maximum Structural Fragment Aligner
+PBDE_LogVP.flat.sdf,34,3,1479,554
+caco2.flat.sdf,100,5,8036,1326
+cox2.flat.sdf,467,6,4144,2474
+CPDBAS_v5d_1547_20Nov2008.ob.sdf,1508,6,2636,2594

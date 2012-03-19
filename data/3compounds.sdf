@@ -1,0 +1,447 @@
+
+ OpenBabel08071123423D
+
+ 18 21  0  0  0  0  0  0  0  0999 V2000
+    0.9759   -0.6640    0.8254 C   0  0  0  0  0  0  0  0  0  0  0  0
+   -0.0732   -0.3311   -0.2928 C   0  0  0  0  0  0  0  0  0  0  0  0
+    1.4913    0.6736    1.4678 C   0  0  0  0  0  0  0  0  0  0  0  0
+    2.2152   -0.9260   -0.0340 C   0  0  0  0  0  0  0  0  0  0  0  0
+    0.4997   -1.9274    1.9310 Cl  0  0  0  0  0  0  0  0  0  0  0  0
+    0.3630    1.1231   -0.7327 C   0  0  0  0  0  0  0  0  0  0  0  0
+   -1.6000   -0.2083   -0.1411 C   0  0  0  0  0  0  0  0  0  0  0  0
+    1.6800    1.3367    0.0722 C   0  0  0  0  0  0  0  0  0  0  0  0
+    0.5005    1.5144    2.6771 Cl  0  0  0  0  0  0  0  0  0  0  0  0
+    3.0767    0.4806    2.4127 Cl  0  0  0  0  0  0  0  0  0  0  0  0
+    2.6180    0.2638   -0.5098 C   0  0  0  0  0  0  0  0  0  0  0  0
+    2.8226   -2.4657   -0.3843 Cl  0  0  0  0  0  0  0  0  0  0  0  0
+   -0.9749    1.9069   -0.6302 C   0  0  0  0  0  0  0  0  0  0  0  0
+   -1.9017    0.8344   -1.2470 C   0  0  0  0  0  0  0  0  0  0  0  0
+   -1.9814    0.6448    1.0229 C   0  0  0  0  0  0  0  0  0  0  0  0
+    2.2776    2.9799    0.0470 Cl  0  0  0  0  0  0  0  0  0  0  0  0
+    3.8590    0.5678   -1.6215 Cl  0  0  0  0  0  0  0  0  0  0  0  0
+   -1.6314    1.9038    0.7236 C   0  0  0  0  0  0  0  0  0  0  0  0
+  1  4  1  0  0  0  0
+  1  2  1  0  0  0  0
+  1  5  1  0  0  0  0
+  1  3  1  0  0  0  0
+  2  6  1  0  0  0  0
+  2  7  1  0  0  0  0
+  3  8  1  0  0  0  0
+  3 10  1  0  0  0  0
+  3  9  1  0  0  0  0
+  4 11  2  0  0  0  0
+  4 12  1  0  0  0  0
+  6  8  1  0  0  0  0
+  6 13  1  0  0  0  0
+  7 15  1  0  0  0  0
+  7 14  1  0  0  0  0
+  8 11  1  0  0  0  0
+  8 16  1  0  0  0  0
+ 11 17  1  0  0  0  0
+ 13 18  1  0  0  0  0
+ 13 14  1  0  0  0  0
+ 15 18  2  0  0  0  0
+M  END
+>  <DSSTox_RID>
+22330
+
+>  <DSSTox_CID>
+40
+
+>  <DSSTox_Generic_SID>
+20040
+
+>  <DSSTox_FileID>
+23_NCTRER_v4b
+
+>  <STRUCTURE_Formula>
+C12H8Cl6
+
+>  <STRUCTURE_MolecularWeight>
+364.9099
+
+>  <STRUCTURE_ChemicalType>
+defined organic
+
+>  <STRUCTURE_TestedForm_DefinedOrganic>
+parent
+
+>  <STRUCTURE_Shown>
+tested chemical
+
+>  <TestSubstance_ChemicalName>
+aldrin
+
+>  <TestSubstance_CASRN>
+309-00-2
+
+>  <TestSubstance_Description>
+single chemical compound
+
+>  <ChemicalNote>
+stereochem
+
+>  <STRUCTURE_ChemicalName_IUPAC>
+1,2,3,4,10,10-hexachloro-1,4,4a,5,8,8a-hexahydro-1,4:5,8-dimethanonaphthalene
+
+>  <STRUCTURE_SMILES>
+ClC(C(Cl)(Cl)C43Cl)(C(Cl)=C4Cl)C1C3C2C=CC1C2
+
+>  <STRUCTURE_Parent_SMILES>
+ClC(C(Cl)(Cl)C43Cl)(C(Cl)=C4Cl)C1C3C2C=CC1C2
+
+>  <STRUCTURE_InChI>
+InChI=1/C12H8Cl6/c13-8-9(14)11(16)7-5-2-1-4(3-5)6(7)10(8,15)12(11,17)18/h1-2,4-7H,3H2
+
+>  <STRUCTURE_InChIKey>
+QBYJBZPUGVGKQQ-UHFFFAOYAT
+
+>  <StudyType>
+Receptor Binding
+
+>  <Endpoint>
+Estrogen Receptor Relative Binding Affinity
+
+>  <Species>
+rat
+
+>  <ChemClass_ERB>
+Misc
+
+>  <ER_RBA>
+0
+
+>  <LOG_ER_RBA>
+-10000
+
+>  <ActivityScore_NCTRER>
+0
+
+>  <ActivityOutcome_NCTRER>
+inactive
+
+>  <ActivityCategory_ER_RBA>
+inactive
+
+>  <ActivityCategory_Rationale_ChemClass_ERB>
+No key features for ER binding.
+
+>  <F1_Ring>
+1
+
+>  <F2_AromaticRing>
+0
+
+>  <F3_PhenolicRing>
+0
+
+>  <F4_Heteroatom>
+0
+
+>  <F5_Phenol3nPhenyl>
+0
+
+>  <F6_OtherKeyFeatures>
+0
+
+>  <LOGP>
+6.75
+
+$$$$
+
+ OpenBabel08071123443D
+
+ 21 24  0  0  0  0  0  0  0  0999 V2000
+   -3.4969   -0.0364    0.5749 C   0  0  2  0  0  0  0  0  0  0  0  0
+   -2.7422    1.2510    0.0888 C   0  0  2  0  0  0  0  0  0  0  0  0
+   -1.2140    1.1735   -0.2610 C   0  0  2  0  0  0  0  0  0  0  0  0
+   -0.3576    2.2206    0.4761 C   0  0  0  0  0  0  0  0  0  0  0  0
+    1.0618    2.2658   -0.0646 C   0  0  0  0  0  0  0  0  0  0  0  0
+    1.7146    0.9171   -0.0037 C   0  0  0  0  0  0  0  0  0  0  0  0
+    0.9534   -0.2594   -0.1129 C   0  0  0  0  0  0  0  0  0  0  0  0
+   -0.5734   -0.2390   -0.1695 C   0  0  1  0  0  0  0  0  0  0  0  0
+   -1.1635   -1.0138    1.0147 C   0  0  0  0  0  0  0  0  0  0  0  0
+   -2.6327   -1.2953    0.7577 C   0  0  0  0  0  0  0  0  0  0  0  0
+    1.6326   -1.4923   -0.1546 C   0  0  0  0  0  0  0  0  0  0  0  0
+    3.0214   -1.5575   -0.0304 C   0  0  0  0  0  0  0  0  0  0  0  0
+    3.7505   -0.3889    0.1151 C   0  0  0  0  0  0  0  0  0  0  0  0
+    5.1019   -0.4916    0.2595 O   0  0  0  0  0  0  0  0  0  0  0  0
+    3.1139    0.8458    0.1084 C   0  0  0  0  0  0  0  0  0  0  0  0
+   -3.1444    2.3737    1.0860 C   0  0  0  0  0  0  0  0  0  0  0  0
+   -4.4230    1.9073    1.7664 C   0  0  2  0  0  0  0  0  0  0  0  0
+   -4.1958    0.3978    1.9033 C   0  0  2  0  0  0  0  0  0  0  0  0
+   -3.3842    0.1388    3.0503 O   0  0  0  0  0  0  0  0  0  0  0  0
+   -4.6004   -0.4015   -0.4551 C   0  0  0  0  0  0  0  0  0  0  0  0
+   -5.5495    2.2108    0.9589 O   0  0  0  0  0  0  0  0  0  0  0  0
+  1 10  1  0  0  0  0
+  1  2  1  0  0  0  0
+  1 18  1  0  0  0  0
+  1 20  1  1  0  0  0
+  2  3  1  0  0  0  0
+  2 16  1  1  0  0  0
+  3  4  1  6  0  0  0
+  3  8  1  0  0  0  0
+  4  5  1  0  0  0  0
+  5  6  1  0  0  0  0
+  6 15  1  0  0  0  0
+  6  7  2  0  0  0  0
+  7 11  1  0  0  0  0
+  8  7  1  1  0  0  0
+  8  9  1  0  0  0  0
+  9 10  1  0  0  0  0
+ 11 12  2  0  0  0  0
+ 12 13  1  0  0  0  0
+ 13 15  2  0  0  0  0
+ 13 14  1  0  0  0  0
+ 16 17  1  0  0  0  0
+ 17 18  1  0  0  0  0
+ 17 21  1  6  0  0  0
+ 18 19  1  6  0  0  0
+M  END
+>  <DSSTox_RID>
+22366
+
+>  <DSSTox_CID>
+2366
+
+>  <DSSTox_Generic_SID>
+22366
+
+>  <DSSTox_FileID>
+59_NCTRER_v4b
+
+>  <STRUCTURE_Formula>
+C18H24O3
+
+>  <STRUCTURE_MolecularWeight>
+288.3814
+
+>  <STRUCTURE_ChemicalType>
+defined organic
+
+>  <STRUCTURE_TestedForm_DefinedOrganic>
+parent
+
+>  <STRUCTURE_Shown>
+tested chemical
+
+>  <TestSubstance_ChemicalName>
+estriol
+
+>  <TestSubstance_CASRN>
+50-27-1
+
+>  <TestSubstance_Description>
+single chemical compound
+
+>  <ChemicalNote>
+stereochem
+
+>  <STRUCTURE_ChemicalName_IUPAC>
+(16alpha,17beta)-estra-1,3,5(10)-triene-3,16,17-triol
+
+>  <STRUCTURE_SMILES>
+[C@]12([C@]([C@@]3(CCC4=C([C@@](CC1)3[H])C=CC(O)=C4)[H])(C[C@H]([C@H]2O)O)[H])C
+
+>  <STRUCTURE_Parent_SMILES>
+[C@]12([C@]([C@@]3(CCC4=C([C@@](CC1)3[H])C=CC(O)=C4)[H])(C[C@H]([C@H]2O)O)[H])C
+
+>  <STRUCTURE_InChI>
+InChI=1/C18H24O3/c1-18-7-6-13-12-5-3-11(19)8-10(12)2-4-14(13)15(18)9-16(20)17(18)21/h3,5,8,13-17,19-21H,2,4,6-7,9H2,1H3/t13-,14-,15+,16-,17+,18+/m1/s1
+
+>  <STRUCTURE_InChIKey>
+PROQIPRRNZUXQM-ZXXIGWHRBN
+
+>  <StudyType>
+Receptor Binding
+
+>  <Endpoint>
+Estrogen Receptor Relative Binding Affinity
+
+>  <Species>
+rat
+
+>  <ChemClass_ERB>
+Steroids With aromatic A ring
+
+>  <ER_RBA>
+9.77
+
+>  <LOG_ER_RBA>
+0.99
+
+>  <ActivityScore_NCTRER>
+81
+
+>  <ActivityOutcome_NCTRER>
+active
+
+>  <ActivityCategory_ER_RBA>
+active strong
+
+>  <Mean_ER_RBA_ChemClass>
+1.24
+
+>  <ActivityCategory_Rationale_ChemClass_ERB>
+For steroids with phenolic A ring, 3OH and 17b OH H-bond centers optimal; 3OH loss gives greatest RBA reduction, steric bulk at 7a or 11b also leads to reduced RBA.
+
+>  <F1_Ring>
+1
+
+>  <F2_AromaticRing>
+1
+
+>  <F3_PhenolicRing>
+1
+
+>  <F4_Heteroatom>
+0
+
+>  <F5_Phenol3nPhenyl>
+0
+
+>  <F6_OtherKeyFeatures>
+1
+
+>  <LOGP>
+2.81
+
+$$$$
+
+ OpenBabel08071123553D
+
+ 13 14  0  0  0  0  0  0  0  0999 V2000
+    0.9069    0.0279    0.3460 O   0  0  0  0  0  0  0  0  0  0  0  0
+    2.2484    0.1080    0.1190 C   0  0  0  0  0  0  0  0  0  0  0  0
+    2.8512    1.3039   -0.2518 C   0  0  0  0  0  0  0  0  0  0  0  0
+    4.2318    1.3373   -0.4738 C   0  0  0  0  0  0  0  0  0  0  0  0
+    5.0207    0.1822   -0.3294 C   0  0  0  0  0  0  0  0  0  0  0  0
+    4.3805   -1.0108    0.0462 C   0  0  0  0  0  0  0  0  0  0  0  0
+    3.0015   -1.0483    0.2701 C   0  0  0  0  0  0  0  0  0  0  0  0
+    6.4735    0.2216   -0.5659 C   0  0  0  0  0  0  0  0  0  0  0  0
+    7.2899    1.1568    0.0924 C   0  0  0  0  0  0  0  0  0  0  0  0
+    8.6688    1.1950   -0.1316 C   0  0  0  0  0  0  0  0  0  0  0  0
+    9.2559    0.2975   -1.0199 C   0  0  0  0  0  0  0  0  0  0  0  0
+    8.4656   -0.6376   -1.6831 C   0  0  0  0  0  0  0  0  0  0  0  0
+    7.0869   -0.6748   -1.4571 C   0  0  0  0  0  0  0  0  0  0  0  0
+  1  2  1  0  0  0  0
+  2  3  2  0  0  0  0
+  2  7  1  0  0  0  0
+  3  4  1  0  0  0  0
+  4  5  2  0  0  0  0
+  5  6  1  0  0  0  0
+  5  8  1  0  0  0  0
+  6  7  2  0  0  0  0
+  8  9  2  0  0  0  0
+  8 13  1  0  0  0  0
+  9 10  1  0  0  0  0
+ 10 11  2  0  0  0  0
+ 11 12  1  0  0  0  0
+ 12 13  2  0  0  0  0
+M  END
+>  <DSSTox_RID>
+22440
+
+>  <DSSTox_CID>
+1152
+
+>  <DSSTox_Generic_SID>
+21152
+
+>  <DSSTox_FileID>
+133_NCTRER_v4b
+
+>  <STRUCTURE_Formula>
+C12H10O
+
+>  <STRUCTURE_MolecularWeight>
+170.2072
+
+>  <STRUCTURE_ChemicalType>
+defined organic
+
+>  <STRUCTURE_TestedForm_DefinedOrganic>
+parent
+
+>  <STRUCTURE_Shown>
+tested chemical
+
+>  <TestSubstance_ChemicalName>
+4-hydroxybiphenyl
+
+>  <TestSubstance_CASRN>
+92-69-3
+
+>  <TestSubstance_Description>
+single chemical compound
+
+>  <STRUCTURE_ChemicalName_IUPAC>
+biphenyl-4-ol
+
+>  <STRUCTURE_SMILES>
+OC1=CC=C(C=C1)C2=CC=CC=C2
+
+>  <STRUCTURE_Parent_SMILES>
+OC1=CC=C(C=C1)C2=CC=CC=C2
+
+>  <STRUCTURE_InChI>
+InChI=1/C12H10O/c13-12-8-6-11(7-9-12)10-4-2-1-3-5-10/h1-9,13H
+
+>  <STRUCTURE_InChIKey>
+YXVFYQXJAXKLAK-UHFFFAOYAY
+
+>  <StudyType>
+Receptor Binding
+
+>  <Endpoint>
+Estrogen Receptor Relative Binding Affinity
+
+>  <Species>
+rat
+
+>  <ChemClass_ERB>
+Biphenyls nonchlorinated
+
+>  <ER_RBA>
+0.00091
+
+>  <LOG_ER_RBA>
+-3.04
+
+>  <ActivityScore_NCTRER>
+36
+
+>  <ActivityOutcome_NCTRER>
+active
+
+>  <ActivityCategory_ER_RBA>
+active weak
+
+>  <Mean_ER_RBA_ChemClass>
+0.0028
+
+>  <ActivityCategory_Rationale_ChemClass_ERB>
+Nonchlorinated biphenyls are weak binders; RBA decreases 2-fold from 4-OH to 3-OH and eliminated for 2-OH, weak binding for 3-OH indicates less optimal but confers some binding activity.
+
+>  <F1_Ring>
+1
+
+>  <F2_AromaticRing>
+1
+
+>  <F3_PhenolicRing>
+1
+
+>  <F4_Heteroatom>
+0
+
+>  <F5_Phenol3nPhenyl>
+0
+
+>  <F6_OtherKeyFeatures>
+1
+
+>  <LOGP>
+3.28
+
+$$$$

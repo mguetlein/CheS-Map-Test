@@ -1,0 +1,5 @@
+Dataset,Compounds,CDKPropertiesCreator Constitutional,CDKPropertiesCreator WithoutIonizationPotential,OBFingerprintCreator,OBCarcMutRulesCreator,CDKCarcMutRulesCreator,OBDescriptorCreator,CDKCarcMutRulesCreator2,CDKFingerprintCreator
+PBDE_LogVP.flat.sdf,34.0,4740.0,7307.0,3025.0,1260.0,27756.0,5359.0,3608.0,30162.0
+caco2.flat.sdf,100.0,9418.0,77267.0,2489.0,530.0,197288.0,7865.0,4386.0,97277
+cox2.flat.sdf,467.0,38194.0,273793.0,5427.0,1723.0,2838981.0,21492.0,24240.0,775263
+CPDBAS_v5d_1547_20Nov2008.ob.sdf,1508.0,124311.0,1158924.0,14086.0,5034.0,null,45549.0,39455.0,null
