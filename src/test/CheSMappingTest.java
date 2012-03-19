@@ -87,6 +87,7 @@ public class CheSMappingTest
 		FEATURE_SETS = new MoleculePropertySetCreator[] { new CDKPropertiesCreator(Subset.WithoutIonizationPotential),
 				new OBDescriptorCreator(), new OBStructuralPropertiesCreator(), new CDKStructuralPropertiesCreator() };
 		FEATURE_FILTER = new MoleculePropertySetFilter[] { new CoinFlipPropertySetFilter(random) };
+		ALIGNERS = new ThreeDAligner[] { NoAligner.INSTANCE };
 		RANDOM_BUILD_ALIGN = true;
 
 		//CUSTOM

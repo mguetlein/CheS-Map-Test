@@ -9,13 +9,11 @@ import java.util.List;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
+import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 import org.junit.Assert;
-
-import util.SwingUtil;
-import util.ThreadUtil;
 
 public class SwingTestUtil
 {
@@ -78,6 +76,11 @@ public class SwingTestUtil
 	public static JTextField getOnlyTextField(Container owner)
 	{
 		return (JTextField) getOnlyComponent(owner, JTextField.class);
+	}
+
+	public static JList getOnlyList(Container owner)
+	{
+		return (JList) getOnlyComponent(owner, JList.class);
 	}
 
 	private static JComponent getOnlyComponent(Container owner, Class<?> clazz)

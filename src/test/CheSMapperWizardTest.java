@@ -6,6 +6,7 @@ import gui.CheSViewer;
 import gui.DatasetWizardPanel;
 
 import javax.swing.JButton;
+import javax.swing.JList;
 import javax.swing.JTextField;
 
 import main.Settings;
@@ -15,6 +16,7 @@ import org.junit.Test;
 
 import util.SwingTestUtil;
 import util.ThreadUtil;
+import alg.build3d.ThreeDBuilder;
 
 public class CheSMapperWizardTest
 {
@@ -81,9 +83,16 @@ public class CheSMapperWizardTest
 	@Test
 	public void testCreate3DPanel()
 	{
-		//Build3DWizardPanel panel = (Build3DWizardPanel) wizard.getCurrentPanel();
+		Build3DWizardPanel panel = (Build3DWizardPanel) wizard.getCurrentPanel();
 		Assert.assertTrue(prevButton.isEnabled());
 		Assert.assertTrue(nextButton.isEnabled());
+
+		JList list = SwingTestUtil.getOnlyList(panel);
+		for (int i = 0; i < list.getModel().getSize(); i++)
+			Assert.assertEquals(list.getModel().getElementAt(i), ThreeDBuilder.BUILDERS[i]);
+
+		nextButton.doClick();
+		Assert.assertTrue(wizard.getCurrentPanel() instanceof Build3DWizardPanel);
 	}
 
 	@Test
