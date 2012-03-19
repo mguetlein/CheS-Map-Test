@@ -4,6 +4,7 @@ import gui.Build3DWizardPanel;
 import gui.CheSMapperWizard;
 import gui.CheSViewer;
 import gui.DatasetWizardPanel;
+import gui.FeatureWizardPanel;
 
 import javax.swing.JButton;
 import javax.swing.JList;
@@ -92,7 +93,7 @@ public class CheSMapperWizardTest
 			Assert.assertEquals(list.getModel().getElementAt(i), ThreeDBuilder.BUILDERS[i]);
 
 		nextButton.doClick();
-		Assert.assertTrue(wizard.getCurrentPanel() instanceof Build3DWizardPanel);
+		Assert.assertTrue(wizard.getCurrentPanel() instanceof FeatureWizardPanel);
 	}
 
 	@Test
