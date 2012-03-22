@@ -28,7 +28,7 @@ import alg.cluster.DatasetClusterer;
 import alg.embed3d.ThreeDEmbedder;
 import dataInterface.MoleculePropertySet;
 
-public class CheSMapperWizardTest
+public class WizardTest
 {
 	public static String DATA_DIR = "data/";
 
@@ -38,7 +38,7 @@ public class CheSMapperWizardTest
 	static JButton closeButton;
 	static JButton startButton;
 
-	public CheSMapperWizardTest()
+	public WizardTest()
 	{
 		if (wizard == null)
 		{

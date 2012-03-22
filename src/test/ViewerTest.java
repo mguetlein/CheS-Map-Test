@@ -1,5 +1,6 @@
 package test;
 
+import gui.BlockableFrame;
 import gui.CheSMapperWizard;
 import gui.CheSViewer;
 import gui.DatasetWizardPanel;
@@ -14,11 +15,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.io.File;
 import java.util.List;
+import java.util.Random;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JDialog;
-import javax.swing.JFrame;
 import javax.swing.JList;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
@@ -36,16 +37,18 @@ import util.SwingTestUtil;
 import util.ThreadUtil;
 import dataInterface.MoleculePropertySet;
 
-public class CheSViewerTest
+public class ViewerTest
 {
-	static JFrame viewer;
+	static BlockableFrame viewer;
 	public static String DATA_DIR = "data/";
+	static Random random = new Random();
 
 	String dataset = "basicTestSet.sdf";
 	int numClusters = 2;
 	int numCompounds = 16;
+	int numCompoundsInClusters[] = { 6, 10 };
 
-	public CheSViewerTest()
+	public ViewerTest()
 	{
 		if (viewer == null)
 		{
@@ -91,7 +94,7 @@ public class CheSViewerTest
 			ThreadUtil.sleep(250);
 			loadingDialog();
 
-			viewer = Settings.TOP_LEVEL_FRAME;
+			viewer = (BlockableFrame) Settings.TOP_LEVEL_FRAME;
 			Assert.assertTrue(viewer.getTitle().contains(dataset));
 			Assert.assertTrue(viewer.getTitle().contains("CheS-Mapper"));
 		}
@@ -144,7 +147,52 @@ public class CheSViewerTest
 		Assert.assertEquals(lists.size(), 2);
 
 		JList clusterList = lists.get(0);
+		JList modelList = lists.get(1);
 		Assert.assertEquals(clusterList.getModel().getSize() - 1, numClusters);
+
+		for (int i = 0; i < numClusters; i++)
+		{
+			Assert.assertFalse(modelList.isShowing());
+			Assert.assertFalse(viewer.isBlocked());
+			SwingTestUtil.clickList(clusterList, i + 1);
+			ThreadUtil.sleep(200);
+			Assert.assertTrue(viewer.isBlocked());
+			while (viewer.isBlocked())
+			{
+				ThreadUtil.sleep(200);
+				System.out.println("waiting to zoom into cluster");
+			}
+			Assert.assertTrue(modelList.isShowing());
+			Assert.assertEquals(modelList.getModel().getSize(), numCompoundsInClusters[i]);
+
+			int randomModel = random.nextInt(numCompoundsInClusters[i]);
+			SwingTestUtil.clickList(modelList, randomModel);
+			ThreadUtil.sleep(200);
+			Assert.assertTrue(viewer.isBlocked());
+			while (viewer.isBlocked())
+			{
+				ThreadUtil.sleep(200);
+				System.out.println("waiting to zoom into model");
+			}
+
+			SwingTestUtil.clickList(modelList, randomModel);
+			ThreadUtil.sleep(200);
+			Assert.assertTrue(viewer.isBlocked());
+			while (viewer.isBlocked())
+			{
+				ThreadUtil.sleep(200);
+				System.out.println("waiting to zoom out of model");
+			}
+
+			SwingTestUtil.clickList(clusterList, 0);
+			ThreadUtil.sleep(200);
+			Assert.assertTrue(viewer.isBlocked());
+			while (viewer.isBlocked())
+			{
+				ThreadUtil.sleep(200);
+				System.out.println("waiting to zoom out of cluster");
+			}
+		}
 	}
 
 	@Test
@@ -212,6 +260,6 @@ public class CheSViewerTest
 	{
 		JMenuItem exit = getPopupMenuItem("Exit");
 		exit.doClick();
-		Assert.assertFalse(viewer.isVisible());
+		Assert.assertFalse(true);
 	}
 }

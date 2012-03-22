@@ -48,7 +48,7 @@ import dataInterface.MoleculeProperty;
 import dataInterface.MoleculePropertySet;
 import dataInterface.MoleculePropertyUtil;
 
-public class CheSMappingTest
+public class MappingTest
 {
 	public static String DATA_DIR = "data/";
 	static Random random;

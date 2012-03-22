@@ -4,7 +4,10 @@ import gui.Selector;
 
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.Point;
+import java.awt.Robot;
 import java.awt.Window;
+import java.awt.event.InputEvent;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,9 +20,9 @@ import javax.swing.JList;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
-import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JRadioButton;
+import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 
 import org.junit.Assert;
@@ -200,22 +203,54 @@ public class SwingTestUtil
 		return list;
 	}
 
+	public static void clickList(JList list, int index)
+	{
+		try
+		{
+			Robot r = new Robot(ScreenUtil.getGraphicsDevice(ScreenUtil.getScreen((Window) list.getTopLevelAncestor())));
+			Point p = list.getLocationOnScreen();
+			Point p2 = list.indexToLocation(index);
+			r.mouseMove(p.x + p2.x + 5, p.y + p2.y + 5);
+			r.mousePress(InputEvent.BUTTON1_MASK);
+			r.mouseRelease(InputEvent.BUTTON1_MASK);
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
+	}
+
 	public static void main(String args[])
 	{
-		JButton b = new JButton("b");
-		b.setName("b");
-		final JPanel p = new JPanel();
-		p.add(b);
-		SwingUtil.showInDialog(p, "test", null, new Runnable()
+		final JList l = new JList(
+				"alsjkf asölkfjaölskfj ölaskjflaskdjf iosdfosdf sdk slfdjk aölskfj lskfdj sldkfj".split(" "));
+		JScrollPane scroll = new JScrollPane(l);
+		SwingUtil.showInDialog(scroll, "test", null, new Runnable()
 		{
 
 			@Override
 			public void run()
 			{
-				System.out.println(SwingTestUtil.getButton(p.getTopLevelAncestor(), "b"));
+				//				ThreadUtil.sleep(1000);
+				SwingTestUtil.clickList(l, 6);
 
 			}
 		});
+
+		//		JButton b = new JButton("b");
+		//		b.setName("b");
+		//		final JPanel p = new JPanel();
+		//		p.add(b);
+		//		SwingUtil.showInDialog(p, "test", null, new Runnable()
+		//		{
+		//
+		//			@Override
+		//			public void run()
+		//			{
+		//				System.out.println(SwingTestUtil.getButton(p.getTopLevelAncestor(), "b"));
+		//
+		//			}
+		//		});
 		System.exit(0);
 	}
 
