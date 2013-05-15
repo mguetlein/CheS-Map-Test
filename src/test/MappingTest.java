@@ -10,15 +10,14 @@ import main.BinHandler;
 import main.CheSMapping;
 import main.PropHandler;
 import main.Settings;
-import main.TaskProvider;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.openscience.cdk.geometry.alignment.MultiKabschAlignement;
 import org.openscience.cdk.isomorphism.MCSComputer;
 
 import util.ArrayUtil;
 import util.TestUtil.CDKPropertiesCreator;
-import util.TestUtil.CDKPropertiesCreator.Subset;
 import util.TestUtil.CDKStructuralPropertiesCreator;
 import util.TestUtil.CoinFlipPropertySetFilter;
 import util.TestUtil.InternalPropertiesCreator;
@@ -28,11 +27,9 @@ import util.TestUtil.NoPropertySetFilter;
 import util.TestUtil.OBDescriptorCreator;
 import util.TestUtil.OBStructuralPropertiesCreator;
 import util.TestUtil.StructuralPropertiesCreator;
-import util.ThreadUtil;
 import alg.Algorithm;
 import alg.AlgorithmException.ClusterException;
 import alg.AlgorithmException.EmbedException;
-import alg.FeatureComputer;
 import alg.align3d.MaxFragAligner;
 import alg.align3d.NoAligner;
 import alg.align3d.ThreeDAligner;
@@ -40,10 +37,10 @@ import alg.build3d.ThreeDBuilder;
 import alg.build3d.UseOrigStructures;
 import alg.cluster.DatasetClusterer;
 import alg.cluster.NoClusterer;
+import alg.cluster.WekaClusterer;
 import alg.embed3d.Random3DEmbedder;
 import alg.embed3d.ThreeDEmbedder;
 import data.ClusteringData;
-import data.DefaultFeatureComputer;
 import dataInterface.MoleculeProperty;
 import dataInterface.MoleculePropertySet;
 import dataInterface.MoleculePropertyUtil;
@@ -63,6 +60,7 @@ public class MappingTest
 		BinHandler.init();
 		Settings.CACHING_ENABLED = true;
 		MCSComputer.DEBUG = false;
+		MultiKabschAlignement.DEBUG = false;
 	}
 
 	static String FILES[] = new String[] { "PBDE_LogVP.ob3d.sdf", "chang.sdf", "heyl.sdf", "caco2.sdf",
@@ -84,11 +82,11 @@ public class MappingTest
 		//BASIC
 		FILES = new String[] { "basicTestSet.sdf" };
 		BUILDERS = new ThreeDBuilder[] { UseOrigStructures.INSTANCE };
-		FEATURE_SETS = new MoleculePropertySetCreator[] { new CDKPropertiesCreator(Subset.WithoutIonizationPotential),
-				new OBDescriptorCreator(), new OBStructuralPropertiesCreator(), new CDKStructuralPropertiesCreator() };
+		FEATURE_SETS = new MoleculePropertySetCreator[] { new OBDescriptorCreator() };
 		FEATURE_FILTER = new MoleculePropertySetFilter[] { new CoinFlipPropertySetFilter(random) };
 		ALIGNERS = new ThreeDAligner[] { NoAligner.INSTANCE };
-		RANDOM_BUILD_ALIGN = true;
+		CLUSTERERS = new DatasetClusterer[] { WekaClusterer.WEKA_CLUSTERER[0] };
+		RANDOM_BUILD_ALIGN = false;
 
 		//CUSTOM
 		//		//				FILES = new String[] { "caco2.sdf" };
@@ -121,8 +119,6 @@ public class MappingTest
 	@Test
 	public void testDoMapping()
 	{
-		TaskProvider.registerThread("Ches-Mapper-Task");
-		TaskProvider.task().getPanel();
 		//TaskPanel.PRINT_VERBOSE_MESSAGES = true;
 
 		int n = FILES.length * FEATURE_SETS.length * FEATURE_FILTER.length * CLUSTERERS.length * EMBEDDERS.length;
@@ -200,12 +196,9 @@ public class MappingTest
 				}
 			}
 
-			DatasetWizardPanel datasetProvider = new DatasetWizardPanel(null);
+			DatasetWizardPanel datasetProvider = new DatasetWizardPanel(false);
 			//datasetProvider.load(CheSMappingTest.class.getResource("data/" + file).getFile());
-			datasetProvider.load(DATA_DIR + file);
-			ThreadUtil.sleep(100);
-			while (datasetProvider.getDatasetFile() == null || datasetProvider.isLoading())
-				ThreadUtil.sleep(100);
+			datasetProvider.load(DATA_DIR + file, true);
 			Assert.assertEquals(datasetProvider.getDatasetFile().getFullName(), file);
 
 			//			DatasetProvider datasetProvider = new DatasetProvider()
@@ -232,9 +225,8 @@ public class MappingTest
 			System.err.println("t> do mapping");
 			System.err.println("t> features: " + ArrayUtil.toString(featureSet));
 
-			FeatureComputer featureComputer = new DefaultFeatureComputer(featureSet);
-
-			CheSMapping ch = new CheSMapping(datasetProvider, featureComputer, clusterer, builder, embedder, aligner);
+			CheSMapping ch = new CheSMapping(datasetProvider.getDatasetFile(), featureSet, clusterer, builder,
+					embedder, aligner);
 			ClusteringData clustering = ch.doMapping();
 
 			if (clustering == null)
@@ -279,8 +271,8 @@ public class MappingTest
 					Assert.fail();
 				}
 
-				Assert.assertTrue(clustering.getSize() >= 1);
-				Assert.assertTrue(clustering.getSize() == clustering.getClusters().size());
+				Assert.assertTrue(clustering.getNumClusters() >= 1);
+				Assert.assertTrue(clustering.getNumClusters() == clustering.getClusters().size());
 			}
 		}
 	}

@@ -11,7 +11,6 @@ import java.util.Random;
 import main.BinHandler;
 import main.PropHandler;
 import main.Settings;
-import main.TaskProvider;
 
 import org.junit.Assert;
 import org.openscience.cdk.isomorphism.MCSComputer;
@@ -23,13 +22,11 @@ import util.RuntimeUtil.WrappedFeatureComputer;
 import util.TestUtil.CDKPropertiesCreator;
 import util.TestUtil.CDKPropertiesCreator.Subset;
 import util.TestUtil.OBFingerprintCreator;
-import util.ThreadUtil;
 import alg.FeatureComputer;
 import alg.align3d.ThreeDAligner;
 import alg.build3d.ThreeDBuilder;
 import alg.cluster.DatasetClusterer;
 import alg.cluster.r.AbstractRClusterer;
-import alg.embed3d.EmbedUtil;
 import alg.embed3d.ThreeDEmbedder;
 import data.ClusteringData;
 import data.DatasetFile;
@@ -142,9 +139,9 @@ public class RuntimeEval
 				+ (cdkFeatures ? " CDK" : (" LinFrag (f=" + minFrequency) + ")"));
 
 		for (MoleculeProperty f : featureComputer.getFeatures())
-			clustering.addFeature(f);
+			clustering.addFeature(f, f.numDistinctValues(dataset));
 		for (MoleculeProperty p : featureComputer.getProperties())
-			clustering.addProperty(p);
+			clustering.addProperty(p, p.numDistinctValues(dataset));
 		for (CompoundData c : featureComputer.getCompounds())
 			clustering.addCompound(c);
 		List<MoleculeProperty> featuresWithInfo = new ArrayList<MoleculeProperty>();
@@ -179,10 +176,8 @@ public class RuntimeEval
 		emb.embedDataset(dataset, ListUtil.cast(MolecularPropertyOwner.class, clustering.getCompounds()), features);
 		resultSet.setResultValue(result, name, System.currentTimeMillis() - start);
 
-		double rSquare = EmbedUtil.computeRSquare(
-				ListUtil.cast(MolecularPropertyOwner.class, clustering.getCompounds()), features, emb.getPositions(),
-				dataset);
-		resultSet.setResultValue(result, name + " r²", rSquare);
+		resultSet.setResultValue(result, name + " r^2", emb.getRSquare());
+		resultSet.setResultValue(result, name + " ccc", emb.getCCC());
 	}
 
 	private static DatasetClusterer alignClusterer = AbstractRClusterer.R_CLUSTERER[3];
@@ -312,8 +307,6 @@ public class RuntimeEval
 
 		if (!read)
 		{
-			TaskProvider.registerThread("Ches-Mapper-Task");
-			TaskProvider.task().getPanel();
 			//TaskPanel.PRINT_VERBOSE_MESSAGES = true;
 
 			for (String file : FILES)
@@ -323,10 +316,7 @@ public class RuntimeEval
 
 				DatasetWizardPanel datasetProvider = new DatasetWizardPanel(null);
 				//datasetProvider.load(CheSMappingTest.class.getResource("data/" + file).getFile());
-				datasetProvider.load(DATA_DIR + file);
-				ThreadUtil.sleep(100);
-				while (datasetProvider.getDatasetFile() == null || datasetProvider.isLoading())
-					ThreadUtil.sleep(100);
+				datasetProvider.load(DATA_DIR + file, true);
 				Assert.assertEquals(datasetProvider.getDatasetFile().getFullName(), file);
 				DatasetFile dataset = datasetProvider.getDatasetFile();
 				if (mode != Mode.threeD)

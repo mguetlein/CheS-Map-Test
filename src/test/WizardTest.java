@@ -3,11 +3,11 @@ package test;
 import gui.AlignWizardPanel;
 import gui.Build3DWizardPanel;
 import gui.CheSMapperWizard;
-import gui.CheSViewer;
 import gui.ClusterWizardPanel;
 import gui.DatasetWizardPanel;
 import gui.EmbedWizardPanel;
 import gui.FeatureWizardPanel;
+import gui.LaunchCheSMapper;
 import gui.Selector;
 
 import javax.swing.JButton;
@@ -46,7 +46,7 @@ public class WizardTest
 			{
 				public void run()
 				{
-					CheSViewer.main(new String[] { "default", "no-properties" });
+					LaunchCheSMapper.main(new String[] { "default", "no-properties" });
 				}
 			});
 			th.start();
@@ -74,18 +74,18 @@ public class WizardTest
 		Assert.assertFalse(buttonLoad.isEnabled());
 
 		textField.setText("jklsfdjklajklsfdauioes");
-		Assert.assertFalse(panel.isLoading());
+		Assert.assertFalse(wizard.isBlocked());
 		Assert.assertTrue(buttonLoad.isEnabled());
 		Assert.assertFalse(nextButton.isEnabled());
 
 		buttonLoad.doClick();
-		SwingTestUtil.assertErrorDialog(wizard, "Dataset could not be loaded");
+		SwingTestUtil.assertErrorDialog(wizard, "ERROR - Loading dataset file");
 
 		textField.setText(DATA_DIR + "basicTestSet.sdf");
-		Assert.assertFalse(panel.isLoading());
+		Assert.assertFalse(wizard.isBlocked());
 		buttonLoad.doClick();
-		Assert.assertTrue(panel.isLoading());
-		while (panel.isLoading())
+		Assert.assertTrue(wizard.isBlocked());
+		while (wizard.isBlocked())
 			ThreadUtil.sleep(50);
 		Assert.assertFalse(buttonLoad.isEnabled());
 		Assert.assertTrue(nextButton.isEnabled());
@@ -228,7 +228,7 @@ public class WizardTest
 		AlignWizardPanel panel = (AlignWizardPanel) wizard.getCurrentPanel();
 		Assert.assertTrue(prevButton.isEnabled());
 		Assert.assertFalse(nextButton.isEnabled());
-		
+
 		JList list = SwingTestUtil.getOnlyList(panel);
 		for (int i = 0; i < list.getModel().getSize(); i++)
 			Assert.assertEquals(list.getModel().getElementAt(i), ThreeDAligner.ALIGNER[i]);

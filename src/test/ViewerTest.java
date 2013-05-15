@@ -2,9 +2,9 @@ package test;
 
 import gui.BlockableFrame;
 import gui.CheSMapperWizard;
-import gui.CheSViewer;
 import gui.DatasetWizardPanel;
 import gui.FeatureWizardPanel;
+import gui.LaunchCheSMapper;
 import gui.Selector;
 import io.SDFUtil;
 
@@ -56,7 +56,7 @@ public class ViewerTest
 			{
 				public void run()
 				{
-					CheSViewer.main(new String[] { "default", "no-properties" });
+					LaunchCheSMapper.main(new String[] { "default", "no-properties" });
 				}
 			});
 			th.start();
@@ -71,7 +71,7 @@ public class ViewerTest
 			JButton buttonLoad = SwingTestUtil.getButton(panel, "Load Dataset");
 			textField.setText(DATA_DIR + dataset);
 			buttonLoad.doClick();
-			while (panel.isLoading())
+			while (wizard.isBlocked())
 			{
 				ThreadUtil.sleep(50);
 				System.out.println("waiting for panel to stop loading");
@@ -103,8 +103,8 @@ public class ViewerTest
 	private void loadingDialog()
 	{
 		Window w[] = Window.getWindows();
-		Assert.assertTrue(w.length == 2);
-		JDialog d = (JDialog) w[1];
+		Assert.assertEquals(3, w.length);
+		JDialog d = (JDialog) w[2];
 		while (d.isVisible())
 		{
 			Assert.assertTrue(d.getTitle().matches(".*[0-9]++%.*"));
@@ -198,7 +198,8 @@ public class ViewerTest
 	@Test
 	public void testExport()
 	{
-		final JMenuItem export = SwingTestUtil.getMenuItem(viewer.getJMenuBar(), "Export Cluster/s");
+		final JMenuItem export = SwingTestUtil.getMenuItem(viewer.getJMenuBar(), "Export cluster/s");
+		Assert.assertNotNull(export);
 		SwingUtilities.invokeLater(new Runnable()
 		{
 			@Override
