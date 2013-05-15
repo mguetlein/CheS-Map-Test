@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project default="create_run_jar" name="Create Runnable Jar for Project CheS-Map-Test with libraries in sub-folder">
+    <!--this file was created by Eclipse Runnable JAR Export Wizard-->
+    <!--ANT 1.7 is required                                        -->
+    <target name="create_run_jar">
+        <jar destfile="ches-mapper-unit-test.jar">
+            <manifest>
+                <attribute name="Main-Class" value="test.TestLauncher"/>
+                <attribute name="Class-Path" value=". ches-mapper-unit-test_lib/junit.jar ches-mapper-unit-test_lib/org.hamcrest.core_1.1.0.v20090501071000.jar ches-mapper-unit-test_lib/cdk-1.4.7_mod.jar ches-mapper-unit-test_lib/commons-codec-1.6.jar ches-mapper-unit-test_lib/commons-lang-2.4.jar ches-mapper-unit-test_lib/commons-math-1.2.jar ches-mapper-unit-test_lib/forms-1.2.1.jar ches-mapper-unit-test_lib/javacsv.jar ches-mapper-unit-test_lib/gnujaxp.jar ches-mapper-unit-test_lib/iText-2.1.5.jar ches-mapper-unit-test_lib/jcommon-1.0.16.jar ches-mapper-unit-test_lib/jfreechart-1.0.13-experimental.jar ches-mapper-unit-test_lib/jfreechart-1.0.13-swt.jar ches-mapper-unit-test_lib/jfreechart-1.0.13.jar ches-mapper-unit-test_lib/junit.jar ches-mapper-unit-test_lib/servlet.jar ches-mapper-unit-test_lib/swtgraphics2d.jar ches-mapper-unit-test_lib/Jmol.jar ches-mapper-unit-test_lib/weka.jar ches-mapper-unit-test_lib/ches-mapper.jar"/>
+            </manifest>
+            <fileset dir="bin"/>
+        </jar>
+        <delete dir="ches-mapper-unit-test_lib"/>
+        <mkdir dir="ches-mapper-unit-test_lib"/>
+        <copy file="/home/martin/software/eclipse/plugins/org.junit_4.8.2.v4_8_2_v20110321-1705/junit.jar" todir="ches-mapper-unit-test_lib"/>
+        <copy file="/home/martin/software/eclipse/plugins/org.hamcrest.core_1.1.0.v20090501071000.jar" todir="ches-mapper-unit-test_lib"/>
+        <copy file="lib/ches-mapper_lib/cdk-jar-1.4.7/cdk-1.4.7_mod.jar" todir="ches-mapper-unit-test_lib"/>
+        <copy file="lib/ches-mapper_lib/commons-codec-1.6/commons-codec-1.6.jar" todir="ches-mapper-unit-test_lib"/>
+        <copy file="lib/ches-mapper_lib/commons-lang-2.4/commons-lang-2.4.jar" todir="ches-mapper-unit-test_lib"/>
+        <copy file="lib/ches-mapper_lib/commons-math-1.2/commons-math-1.2.jar" todir="ches-mapper-unit-test_lib"/>
+        <copy file="lib/ches-mapper_lib/forms-1.2.1/forms-1.2.1.jar" todir="ches-mapper-unit-test_lib"/>
+        <copy file="lib/ches-mapper_lib/javacsv2.1/javacsv.jar" todir="ches-mapper-unit-test_lib"/>
+        <copy file="lib/ches-mapper_lib/jfreechart-1.0.13/gnujaxp.jar" todir="ches-mapper-unit-test_lib"/>
+        <copy file="lib/ches-mapper_lib/jfreechart-1.0.13/iText-2.1.5.jar" todir="ches-mapper-unit-test_lib"/>
+        <copy file="lib/ches-mapper_lib/jfreechart-1.0.13/jcommon-1.0.16.jar" todir="ches-mapper-unit-test_lib"/>
+        <copy file="lib/ches-mapper_lib/jfreechart-1.0.13/jfreechart-1.0.13-experimental.jar" todir="ches-mapper-unit-test_lib"/>
+        <copy file="lib/ches-mapper_lib/jfreechart-1.0.13/jfreechart-1.0.13-swt.jar" todir="ches-mapper-unit-test_lib"/>
+        <copy file="lib/ches-mapper_lib/jfreechart-1.0.13/jfreechart-1.0.13.jar" todir="ches-mapper-unit-test_lib"/>
+        <copy file="lib/ches-mapper_lib/jfreechart-1.0.13/junit.jar" todir="ches-mapper-unit-test_lib"/>
+        <copy file="lib/ches-mapper_lib/jfreechart-1.0.13/servlet.jar" todir="ches-mapper-unit-test_lib"/>
+        <copy file="lib/ches-mapper_lib/jfreechart-1.0.13/swtgraphics2d.jar" todir="ches-mapper-unit-test_lib"/>
+        <copy file="lib/ches-mapper_lib/jmol-13.0.9/Jmol.jar" todir="ches-mapper-unit-test_lib"/>
+        <copy file="lib/ches-mapper_lib/weka-3-7-6/weka.jar" todir="ches-mapper-unit-test_lib"/>
+        <copy file="lib/ches-mapper.jar" todir="ches-mapper-unit-test_lib"/>
+    </target>
+</project>
