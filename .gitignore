@@ -1,3 +1,4 @@
-.settings
-VERSION
+build
+lib
 bin
+ches-mapper-unit-test.jar
