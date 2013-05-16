@@ -8,7 +8,7 @@ public class TestLauncher
 {
 	public static void main(String[] args)
 	{
-		Result result = JUnitCore.runClasses(MappingTest.class);
+		Result result = JUnitCore.runClasses(ViewerTest.class);
 		for (Failure failure : result.getFailures())
 		{
 			System.out.println(failure.toString());
