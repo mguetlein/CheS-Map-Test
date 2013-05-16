@@ -27,6 +27,7 @@ import util.TestUtil.NoPropertySetFilter;
 import util.TestUtil.OBDescriptorCreator;
 import util.TestUtil.OBStructuralPropertiesCreator;
 import util.TestUtil.StructuralPropertiesCreator;
+import util.TimeFormatUtil;
 import alg.Algorithm;
 import alg.AlgorithmException.ClusterException;
 import alg.AlgorithmException.EmbedException;
@@ -37,7 +38,6 @@ import alg.build3d.ThreeDBuilder;
 import alg.build3d.UseOrigStructures;
 import alg.cluster.DatasetClusterer;
 import alg.cluster.NoClusterer;
-import alg.cluster.WekaClusterer;
 import alg.embed3d.Random3DEmbedder;
 import alg.embed3d.ThreeDEmbedder;
 import data.ClusteringData;
@@ -76,17 +76,20 @@ public class MappingTest
 	static ThreeDEmbedder EMBEDDERS[] = ThreeDEmbedder.EMBEDDERS;
 	static ThreeDAligner ALIGNERS[] = ThreeDAligner.ALIGNER;
 	static boolean RANDOM_BUILD_ALIGN = false;
+	static long MAX_RUNTIME = 2 * 60 * 60 * 1000; // 2 hours is max-runtime
+	//static long MAX_RUNTIME = 1 * 60 * 1000; // 2 hours is max-runtime
 
 	static
 	{
 		//BASIC
-		FILES = new String[] { "basicTestSet.sdf" };
+		//		FILES = new String[] { "basicTestSet.sdf" };
 		BUILDERS = new ThreeDBuilder[] { UseOrigStructures.INSTANCE };
-		FEATURE_SETS = new MoleculePropertySetCreator[] { new OBDescriptorCreator() };
-		FEATURE_FILTER = new MoleculePropertySetFilter[] { new CoinFlipPropertySetFilter(random) };
-		ALIGNERS = new ThreeDAligner[] { NoAligner.INSTANCE };
-		CLUSTERERS = new DatasetClusterer[] { WekaClusterer.WEKA_CLUSTERER[0] };
-		RANDOM_BUILD_ALIGN = false;
+		//		FEATURE_SETS = new MoleculePropertySetCreator[] { new OBDescriptorCreator() };
+		//		FEATURE_FILTER = new MoleculePropertySetFilter[] { new CoinFlipPropertySetFilter(random) };
+		//		CLUSTERERS = new DatasetClusterer[] { WekaClusterer.WEKA_CLUSTERER[0] };
+		//		EMBEDDERS = new ThreeDEmbedder[] { WekaPCA3DEmbedder.INSTANCE };
+		//		ALIGNERS = new ThreeDAligner[] { NoAligner.INSTANCE };
+		//		RANDOM_BUILD_ALIGN = false;
 
 		//CUSTOM
 		//		//				FILES = new String[] { "caco2.sdf" };
@@ -121,6 +124,8 @@ public class MappingTest
 	{
 		//TaskPanel.PRINT_VERBOSE_MESSAGES = true;
 
+		long start = System.currentTimeMillis();
+
 		int n = FILES.length * FEATURE_SETS.length * FEATURE_FILTER.length * CLUSTERERS.length * EMBEDDERS.length;
 		if (!RANDOM_BUILD_ALIGN)
 			n *= BUILDERS.length * ALIGNERS.length;
@@ -132,6 +137,13 @@ public class MappingTest
 
 		for (int k = 0; k < n; k++)
 		{
+			System.err.println("t> runtime " + TimeFormatUtil.format(System.currentTimeMillis() - start));
+			if (System.currentTimeMillis() - start > MAX_RUNTIME)
+			{
+				System.out.println("max-runtime exceeded");
+				break;
+			}
+
 			int i = indices[k];
 
 			int j = i;
@@ -198,7 +210,10 @@ public class MappingTest
 
 			DatasetWizardPanel datasetProvider = new DatasetWizardPanel(false);
 			//datasetProvider.load(CheSMappingTest.class.getResource("data/" + file).getFile());
-			datasetProvider.load(DATA_DIR + file, true);
+			if (file.startsWith("http"))
+				datasetProvider.load(file, true);
+			else
+				datasetProvider.load(DATA_DIR + file, true);
 			Assert.assertEquals(datasetProvider.getDatasetFile().getFullName(), file);
 
 			//			DatasetProvider datasetProvider = new DatasetProvider()
@@ -225,54 +240,60 @@ public class MappingTest
 			System.err.println("t> do mapping");
 			System.err.println("t> features: " + ArrayUtil.toString(featureSet));
 
-			CheSMapping ch = new CheSMapping(datasetProvider.getDatasetFile(), featureSet, clusterer, builder,
-					embedder, aligner);
-			ClusteringData clustering = ch.doMapping();
-
-			if (clustering == null)
+			for (boolean cachingEnabled : new boolean[] { false, true })
 			{
-				// this should never happen
-				Assert.assertNotNull(ch.getMappingError());
-				Assert.fail();
-			}
-			else
-			{
-				List<MoleculeProperty> featuresWithInfo = new ArrayList<MoleculeProperty>();
-				for (MoleculeProperty p : clustering.getFeatures())
-					if (!MoleculePropertyUtil.hasUniqueValue(p, datasetProvider.getDatasetFile()))
-						featuresWithInfo.add(p);
+				System.err.println("t> caching enabled: " + cachingEnabled);
+				Settings.CACHING_ENABLED = cachingEnabled;
 
-				if (ch.getClusterException() != null)
-				{
-					Assert.assertEquals(clustering.getClusterAlgorithm(), NoClusterer.getNameStatic());
-					Assert.assertTrue(ch.getClusterException() instanceof ClusterException);
-				}
-				else if (!clusterer.getName().equals(clustering.getClusterAlgorithm()))
-				{
-					Assert.assertEquals(clustering.getClusterAlgorithm(), NoClusterer.getNameStatic());
-					Assert.assertTrue(clustering.getCompounds().size() == 1
-							|| (clusterer.requiresFeatures() && featuresWithInfo.size() == 0));
-				}
+				CheSMapping ch = new CheSMapping(datasetProvider.getDatasetFile(), featureSet, clusterer, builder,
+						embedder, aligner);
+				ClusteringData clustering = ch.doMapping();
 
-				if (ch.getEmbedException() != null)
+				if (clustering == null)
 				{
-					Assert.assertEquals(clustering.getEmbedAlgorithm(), Random3DEmbedder.getNameStatic());
-					Assert.assertTrue(ch.getEmbedException() instanceof EmbedException);
-				}
-				else if (!embedder.getName().equals(clustering.getEmbedAlgorithm()))
-				{
-					Assert.assertEquals(clustering.getEmbedAlgorithm(), Random3DEmbedder.getNameStatic());
-					Assert.assertTrue(clustering.getCompounds().size() == 1
-							|| (embedder.requiresFeatures() && featuresWithInfo.size() == 0));
-				}
-
-				if (ch.getAlignException() != null)
-				{
+					// this should never happen
+					Assert.assertNotNull(ch.getMappingError());
 					Assert.fail();
 				}
+				else
+				{
+					List<MoleculeProperty> featuresWithInfo = new ArrayList<MoleculeProperty>();
+					for (MoleculeProperty p : clustering.getFeatures())
+						if (!MoleculePropertyUtil.hasUniqueValue(p, datasetProvider.getDatasetFile()))
+							featuresWithInfo.add(p);
 
-				Assert.assertTrue(clustering.getNumClusters() >= 1);
-				Assert.assertTrue(clustering.getNumClusters() == clustering.getClusters().size());
+					if (ch.getClusterException() != null)
+					{
+						Assert.assertEquals(clustering.getClusterAlgorithm(), NoClusterer.getNameStatic());
+						Assert.assertTrue(ch.getClusterException() instanceof ClusterException);
+					}
+					else if (!clusterer.getName().equals(clustering.getClusterAlgorithm()))
+					{
+						Assert.assertEquals(clustering.getClusterAlgorithm(), NoClusterer.getNameStatic());
+						Assert.assertTrue(clustering.getCompounds().size() == 1
+								|| (clusterer.requiresFeatures() && featuresWithInfo.size() == 0));
+					}
+
+					if (ch.getEmbedException() != null)
+					{
+						Assert.assertEquals(clustering.getEmbedAlgorithm(), Random3DEmbedder.getNameStatic());
+						Assert.assertTrue(ch.getEmbedException() instanceof EmbedException);
+					}
+					else if (!embedder.getName().equals(clustering.getEmbedAlgorithm()))
+					{
+						Assert.assertEquals(clustering.getEmbedAlgorithm(), Random3DEmbedder.getNameStatic());
+						Assert.assertTrue(clustering.getCompounds().size() == 1
+								|| (embedder.requiresFeatures() && featuresWithInfo.size() == 0));
+					}
+
+					if (ch.getAlignException() != null)
+					{
+						Assert.fail();
+					}
+
+					Assert.assertTrue(clustering.getNumClusters() >= 1);
+					Assert.assertTrue(clustering.getNumClusters() == clustering.getClusters().size());
+				}
 			}
 		}
 	}
