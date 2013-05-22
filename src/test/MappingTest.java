@@ -42,7 +42,6 @@ import alg.cluster.ManualClusterer;
 import alg.cluster.NoClusterer;
 import alg.embed3d.Random3DEmbedder;
 import alg.embed3d.ThreeDEmbedder;
-import alg.embed3d.WekaPCA3DEmbedder;
 import data.ClusteringData;
 import dataInterface.MoleculeProperty;
 import dataInterface.MoleculePropertySet;
@@ -93,15 +92,15 @@ public class MappingTest
 	static
 	{
 		//BASIC
-		//		FILES = new String[] { "basicTestSet.sdf" };
+		//		//		FILES = new String[] { "basicTestSet.sdf" };
 		BUILDERS = new ThreeDBuilder[] { UseOrigStructures.INSTANCE };
-		FEATURE_SETS = new MoleculePropertySetCreator[] { new OBDescriptorCreator() };
-		FEATURE_FILTER = new MoleculePropertySetFilter[] { new CoinFlipPropertySetFilter(random) };
-		//CLUSTERERS = new DatasetClusterer[] { WekaClusterer.WEKA_CLUSTERER[0] };
-		CLUSTERERS = new DatasetClusterer[] { ManualClusterer.INSTANCE };
-		EMBEDDERS = new ThreeDEmbedder[] { WekaPCA3DEmbedder.INSTANCE };
-		ALIGNERS = new ThreeDAligner[] { NoAligner.INSTANCE };
-		RANDOM_BUILD_ALIGN = false;
+		//		FEATURE_SETS = new MoleculePropertySetCreator[] { new OBDescriptorCreator() };
+		//		FEATURE_FILTER = new MoleculePropertySetFilter[] { new CoinFlipPropertySetFilter(random) };
+		//		//CLUSTERERS = new DatasetClusterer[] { WekaClusterer.WEKA_CLUSTERER[0] };
+		//		CLUSTERERS = new DatasetClusterer[] { ManualClusterer.INSTANCE };
+		//		EMBEDDERS = new ThreeDEmbedder[] { WekaPCA3DEmbedder.INSTANCE };
+		//		ALIGNERS = new ThreeDAligner[] { NoAligner.INSTANCE };
+		//		RANDOM_BUILD_ALIGN = false;
 
 		//CUSTOM
 		//		//				FILES = new String[] { "caco2.sdf" };
