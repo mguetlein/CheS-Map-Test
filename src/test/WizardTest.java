@@ -77,9 +77,22 @@ public class WizardTest
 		Assert.assertFalse(wizard.isBlocked());
 		Assert.assertTrue(buttonLoad.isEnabled());
 		Assert.assertFalse(nextButton.isEnabled());
-
 		buttonLoad.doClick();
-		SwingTestUtil.assertErrorDialog(wizard, "ERROR - Loading dataset file");
+		Assert.assertTrue(wizard.isBlocked());
+		SwingTestUtil.assertErrorDialog(wizard, "ERROR - Loading dataset file", "not found");
+		Assert.assertFalse(wizard.isBlocked());
+
+		textField.setText(DATA_DIR + "broken_smiles.csv");
+		Assert.assertFalse(wizard.isBlocked());
+		Assert.assertTrue(buttonLoad.isEnabled());
+		Assert.assertFalse(nextButton.isEnabled());
+		buttonLoad.doClick();
+		Assert.assertTrue(wizard.isBlocked());
+		while (SwingTestUtil.getOnlyVisibleDialog(wizard) == null
+				|| SwingTestUtil.getOnlyVisibleDialog(wizard).getTitle().equals("Loading dataset file"))
+			ThreadUtil.sleep(50);
+		SwingTestUtil.assertErrorDialog(wizard, "ERROR - Loading dataset file", "illegal smiles");
+		Assert.assertFalse(wizard.isBlocked());
 
 		textField.setText(DATA_DIR + "basicTestSet.sdf");
 		Assert.assertFalse(wizard.isBlocked());

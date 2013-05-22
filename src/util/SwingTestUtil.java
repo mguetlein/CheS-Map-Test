@@ -16,6 +16,7 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
+import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -24,6 +25,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
+import javax.swing.text.JTextComponent;
 
 import org.junit.Assert;
 
@@ -51,13 +53,21 @@ public class SwingTestUtil
 		return null;
 	}
 
-	public static void assertErrorDialog(Window owner, String titleMatch)
+	public static void assertErrorDialog(Window owner, String titleMatch, String contentMatch)
 	{
 		ThreadUtil.sleep(200);
 		JDialog d = getOnlyVisibleDialog(owner);
 		Assert.assertNotNull(d);
-		Assert.assertTrue("title is '" + d.getTitle() + "'", d.getTitle().matches("(?i).*" + titleMatch + "*"));
-		d.dispose();
+		Assert.assertTrue("title is '" + d.getTitle() + "', does not match '" + titleMatch + "'",
+				d.getTitle().matches("(?i).*" + titleMatch + ".*"));
+		//		String content = getAllText(d);
+		//		String contentMatchRegexp = "(?i).*" + contentMatch + ".*";
+		//		boolean b = content.matches(contentMatchRegexp);
+		Assert.assertTrue("content is '" + getAllText(d) + "', does not contain '" + contentMatch + "'", getAllText(d)
+				.matches("(?i).*" + contentMatch + ".*"));
+		JButton close = getButton(d, "Close");
+		Assert.assertNotNull(close);
+		close.doClick();
 		Assert.assertFalse(d.isVisible());
 		ThreadUtil.sleep(200);
 	}
@@ -152,6 +162,19 @@ public class SwingTestUtil
 			}
 		}
 		return null;
+	}
+
+	public static String getAllText(Container owner)
+	{
+		String content = "";
+		String sep = "";//"\n"
+		for (JComponent comp : getComponents(owner, JTextComponent.class))
+			content += ((JTextComponent) comp).getText() + sep;
+		for (JComponent comp : getComponents(owner, JLabel.class))
+			content += ((JLabel) comp).getText() + sep;
+		for (JComponent comp : getComponents(owner, AbstractButton.class))
+			content += ((AbstractButton) comp).getText() + sep;
+		return content;
 	}
 
 	public static JTextField getOnlyTextField(Container owner)

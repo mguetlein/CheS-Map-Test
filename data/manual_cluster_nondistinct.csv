@@ -1,0 +1,10 @@
+"SMILES";"cluster"
+"c12c(c(ccc1)Cl)C(N(Cc1n2cnc1c1nc(on1)[C@](CO)(C)O)C)=O";1
+"NCCc1cn2c(n1)cccc2";2
+"CCCN(CCC)CCc1ccc(c2c1CC(N2)=C)O";"1,2"
+"c1(c2c(cc(F)cc2)on1)C1CCN(CCc2c(n3c([C@@H](CCC3)O)nc2C)=O)CC1";1
+"c12c(C(c3ccccc3)=NCc3n1c(nn3)C)cc(Cl)cc2";3
+"C1(\c2c(CCc3c1cccc3)cccc2)=C\CCN(C)C";"1,3"
+"c12c(ncnc1O)[nH]nc2";
+"n1(c2ccccc2)n(c(C)cc1=O)C";"1,2,3"
+"c1(c(cccc1)OC(C)=O)C(O)=O";1

@@ -17,6 +17,7 @@ import org.openscience.cdk.geometry.alignment.MultiKabschAlignement;
 import org.openscience.cdk.isomorphism.MCSComputer;
 
 import util.ArrayUtil;
+import util.DoubleKeyHashMap;
 import util.TestUtil.CDKPropertiesCreator;
 import util.TestUtil.CDKStructuralPropertiesCreator;
 import util.TestUtil.CoinFlipPropertySetFilter;
@@ -37,9 +38,11 @@ import alg.align3d.ThreeDAligner;
 import alg.build3d.ThreeDBuilder;
 import alg.build3d.UseOrigStructures;
 import alg.cluster.DatasetClusterer;
+import alg.cluster.ManualClusterer;
 import alg.cluster.NoClusterer;
 import alg.embed3d.Random3DEmbedder;
 import alg.embed3d.ThreeDEmbedder;
+import alg.embed3d.WekaPCA3DEmbedder;
 import data.ClusteringData;
 import dataInterface.MoleculeProperty;
 import dataInterface.MoleculePropertySet;
@@ -65,7 +68,8 @@ public class MappingTest
 
 	static String FILES[] = new String[] { "PBDE_LogVP.ob3d.sdf", "chang.sdf", "heyl.sdf", "caco2.sdf",
 			"NCTRER_v4b_232_15Feb2008.sdf", "bbp2.csv", "1compound.sdf", "3compounds.sdf",
-			"http://apps.ideaconsult.net:8080/ambit2/dataset/272?max=50" };
+			"http://apps.ideaconsult.net:8080/ambit2/dataset/272?max=50", "2compounds_inchi.csv",
+			"manual_cluster_distinct.csv", "manual_cluster_nondistinct.csv" };
 	static ThreeDBuilder BUILDERS[] = ThreeDBuilder.BUILDERS;
 	static MoleculePropertySetCreator FEATURE_SETS[] = new MoleculePropertySetCreator[] {
 			new InternalPropertiesCreator(), new CDKPropertiesCreator(), new OBDescriptorCreator(),
@@ -77,19 +81,27 @@ public class MappingTest
 	static ThreeDAligner ALIGNERS[] = ThreeDAligner.ALIGNER;
 	static boolean RANDOM_BUILD_ALIGN = false;
 	static long MAX_RUNTIME = 2 * 60 * 60 * 1000; // 2 hours is max-runtime
-	//static long MAX_RUNTIME = 1 * 60 * 1000; // 2 hours is max-runtime
+	//static long MAX_RUNTIME = 1 * 60 * 1000; // 1 minute
+
+	static DoubleKeyHashMap<String, DatasetClusterer, int[]> clusterResult = new DoubleKeyHashMap<String, DatasetClusterer, int[]>();
+	static
+	{
+		clusterResult.put("manual_cluster_distinct.csv", ManualClusterer.INSTANCE, new int[] { 2, 7 });
+		clusterResult.put("manual_cluster_nondistinct.csv", ManualClusterer.INSTANCE, new int[] { 6, 3, 3, 1 });
+	}
 
 	static
 	{
 		//BASIC
 		//		FILES = new String[] { "basicTestSet.sdf" };
 		BUILDERS = new ThreeDBuilder[] { UseOrigStructures.INSTANCE };
-		//		FEATURE_SETS = new MoleculePropertySetCreator[] { new OBDescriptorCreator() };
-		//		FEATURE_FILTER = new MoleculePropertySetFilter[] { new CoinFlipPropertySetFilter(random) };
-		//		CLUSTERERS = new DatasetClusterer[] { WekaClusterer.WEKA_CLUSTERER[0] };
-		//		EMBEDDERS = new ThreeDEmbedder[] { WekaPCA3DEmbedder.INSTANCE };
-		//		ALIGNERS = new ThreeDAligner[] { NoAligner.INSTANCE };
-		//		RANDOM_BUILD_ALIGN = false;
+		FEATURE_SETS = new MoleculePropertySetCreator[] { new OBDescriptorCreator() };
+		FEATURE_FILTER = new MoleculePropertySetFilter[] { new CoinFlipPropertySetFilter(random) };
+		//CLUSTERERS = new DatasetClusterer[] { WekaClusterer.WEKA_CLUSTERER[0] };
+		CLUSTERERS = new DatasetClusterer[] { ManualClusterer.INSTANCE };
+		EMBEDDERS = new ThreeDEmbedder[] { WekaPCA3DEmbedder.INSTANCE };
+		ALIGNERS = new ThreeDAligner[] { NoAligner.INSTANCE };
+		RANDOM_BUILD_ALIGN = false;
 
 		//CUSTOM
 		//		//				FILES = new String[] { "caco2.sdf" };
@@ -216,6 +228,12 @@ public class MappingTest
 				datasetProvider.load(DATA_DIR + file, true);
 			Assert.assertEquals(datasetProvider.getDatasetFile().getFullName(), file);
 
+			if (clusterer instanceof ManualClusterer
+					&& datasetProvider.getDatasetFile().getIntegratedClusterProperty() == null)
+			{
+				System.err.println("t> skipping: no cluster feature for manual clustering");
+				continue;
+			}
 			//			DatasetProvider datasetProvider = new DatasetProvider()
 			//			{
 			//				@Override
@@ -272,6 +290,13 @@ public class MappingTest
 						Assert.assertEquals(clustering.getClusterAlgorithm(), NoClusterer.getNameStatic());
 						Assert.assertTrue(clustering.getCompounds().size() == 1
 								|| (clusterer.requiresFeatures() && featuresWithInfo.size() == 0));
+					}
+					if (clusterResult.get(file, clusterer) != null)
+					{
+						int res[] = clusterResult.get(file, clusterer);
+						Assert.assertEquals(clustering.getNumClusters(), res.length);
+						for (int l = 0; l < res.length; l++)
+							Assert.assertEquals(clustering.getCluster(l).getSize(), res[l]);
 					}
 
 					if (ch.getEmbedException() != null)
