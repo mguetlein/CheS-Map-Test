@@ -44,6 +44,9 @@ public class TestUtil
 		@Override
 		public MoleculePropertySet[] filterSet(MoleculePropertySet[] set)
 		{
+			if (set.length == 0)
+				return new MoleculePropertySet[0];
+
 			if (random.nextBoolean()) // return just one prop
 				return new MoleculePropertySet[] { set[random.nextInt(set.length)] };
 
