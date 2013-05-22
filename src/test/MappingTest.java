@@ -42,6 +42,7 @@ import alg.cluster.ManualClusterer;
 import alg.cluster.NoClusterer;
 import alg.embed3d.Random3DEmbedder;
 import alg.embed3d.ThreeDEmbedder;
+import alg.embed3d.r.TSNEFeature3DEmbedder;
 import data.ClusteringData;
 import dataInterface.MoleculeProperty;
 import dataInterface.MoleculePropertySet;
@@ -94,6 +95,8 @@ public class MappingTest
 		//BASIC
 		//		//		FILES = new String[] { "basicTestSet.sdf" };
 		BUILDERS = new ThreeDBuilder[] { UseOrigStructures.INSTANCE };
+		EMBEDDERS = ArrayUtil.remove(ThreeDEmbedder.class, EMBEDDERS,
+				new ThreeDEmbedder[] { TSNEFeature3DEmbedder.INSTANCE });
 		//		FEATURE_SETS = new MoleculePropertySetCreator[] { new OBDescriptorCreator() };
 		//		FEATURE_FILTER = new MoleculePropertySetFilter[] { new CoinFlipPropertySetFilter(random) };
 		//		//CLUSTERERS = new DatasetClusterer[] { WekaClusterer.WEKA_CLUSTERER[0] };
