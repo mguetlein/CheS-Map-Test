@@ -35,7 +35,7 @@ import alg.embed3d.r.SMACOF3DEmbedder;
 import alg.embed3d.r.Sammon3DEmbedder;
 import alg.embed3d.r.TSNEFeature3DEmbedder;
 import data.DatasetFile;
-import dataInterface.MoleculePropertySet;
+import dataInterface.CompoundPropertySet;
 
 public class RuntimeUtil
 {
@@ -124,7 +124,7 @@ public class RuntimeUtil
 			this.creator = creator;
 		}
 
-		public MoleculePropertySet[] getSet(DatasetFile dataset)
+		public CompoundPropertySet[] getSet(DatasetFile dataset)
 		{
 			return creator.getSet(dataset);
 		}

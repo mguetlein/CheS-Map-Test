@@ -35,7 +35,7 @@ import util.ListUtil;
 import util.ScreenUtil;
 import util.SwingTestUtil;
 import util.ThreadUtil;
-import dataInterface.MoleculePropertySet;
+import dataInterface.CompoundPropertySet;
 
 public class ViewerTest
 {
@@ -80,7 +80,7 @@ public class ViewerTest
 			nextButton.doClick();
 			FeatureWizardPanel panel2 = (FeatureWizardPanel) wizard.getCurrentPanel();
 			@SuppressWarnings("unchecked")
-			Selector<MoleculePropertySet> selector = (Selector<MoleculePropertySet>) SwingTestUtil
+			Selector<CompoundPropertySet> selector = (Selector<CompoundPropertySet>) SwingTestUtil
 					.getOnlySelector(panel2);
 			selector.setCategorySelected("Included in the Dataset", true);
 			JButton startButton = SwingTestUtil.getButton(wizard, "Start mapping");

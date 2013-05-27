@@ -13,20 +13,20 @@ import data.fragments.StructuralFragmentProperties;
 import data.fragments.StructuralFragments;
 import data.obdesc.OBDescriptorProperty;
 import data.obfingerprints.OBFingerprintSet;
-import dataInterface.MoleculeProperty.Type;
-import dataInterface.MoleculePropertySet;
+import dataInterface.CompoundProperty.Type;
+import dataInterface.CompoundPropertySet;
 
 public class TestUtil
 {
 	public interface MoleculePropertySetFilter
 	{
-		public MoleculePropertySet[] filterSet(MoleculePropertySet[] set);
+		public CompoundPropertySet[] filterSet(CompoundPropertySet[] set);
 	}
 
 	public static class NoPropertySetFilter implements MoleculePropertySetFilter
 	{
 		@Override
-		public MoleculePropertySet[] filterSet(MoleculePropertySet[] set)
+		public CompoundPropertySet[] filterSet(CompoundPropertySet[] set)
 		{
 			return set;
 		}
@@ -42,43 +42,43 @@ public class TestUtil
 		}
 
 		@Override
-		public MoleculePropertySet[] filterSet(MoleculePropertySet[] set)
+		public CompoundPropertySet[] filterSet(CompoundPropertySet[] set)
 		{
 			if (set.length == 0)
-				return new MoleculePropertySet[0];
+				return new CompoundPropertySet[0];
 
 			if (random.nextBoolean()) // return just one prop
-				return new MoleculePropertySet[] { set[random.nextInt(set.length)] };
+				return new CompoundPropertySet[] { set[random.nextInt(set.length)] };
 
-			List<MoleculePropertySet> l = new ArrayList<MoleculePropertySet>();
-			for (MoleculePropertySet p : set)
+			List<CompoundPropertySet> l = new ArrayList<CompoundPropertySet>();
+			for (CompoundPropertySet p : set)
 				if (random.nextBoolean())
 					l.add(p);
 
 			if (l.size() == 0)
-				return new MoleculePropertySet[] { set[random.nextInt(set.length)] };
+				return new CompoundPropertySet[] { set[random.nextInt(set.length)] };
 
-			MoleculePropertySet[] a = new MoleculePropertySet[l.size()];
+			CompoundPropertySet[] a = new CompoundPropertySet[l.size()];
 			return l.toArray(a);
 		}
 	}
 
 	public interface MoleculePropertySetCreator
 	{
-		public MoleculePropertySet[] getSet(DatasetFile dataset);
+		public CompoundPropertySet[] getSet(DatasetFile dataset);
 
 		public String getName();
 	}
 
 	public static class InternalPropertiesCreator implements MoleculePropertySetCreator
 	{
-		public MoleculePropertySet[] getSet(DatasetFile dataset)
+		public CompoundPropertySet[] getSet(DatasetFile dataset)
 		{
-			List<MoleculePropertySet> l = new ArrayList<MoleculePropertySet>();
+			List<CompoundPropertySet> l = new ArrayList<CompoundPropertySet>();
 			for (IntegratedProperty p : dataset.getIntegratedProperties(false))
 				if (p.getType() == Type.NOMINAL || p.getType() == Type.NUMERIC)
 					l.add(p);
-			MoleculePropertySet[] a = new MoleculePropertySet[l.size()];
+			CompoundPropertySet[] a = new CompoundPropertySet[l.size()];
 			return l.toArray(a);
 		}
 
@@ -96,9 +96,9 @@ public class TestUtil
 			return "OBDescriptorCreator";
 		}
 
-		public MoleculePropertySet[] getSet(DatasetFile dataset)
+		public CompoundPropertySet[] getSet(DatasetFile dataset)
 		{
-			List<MoleculePropertySet> l = new ArrayList<MoleculePropertySet>();
+			List<CompoundPropertySet> l = new ArrayList<CompoundPropertySet>();
 			for (OBDescriptorProperty p : OBDescriptorProperty.getDescriptors(false))
 				if (p.getType() == Type.NOMINAL || p.getType() == Type.NUMERIC)
 					l.add(p);
@@ -145,7 +145,7 @@ public class TestUtil
 			}
 		}
 
-		public MoleculePropertySet[] getSet(DatasetFile dataset)
+		public CompoundPropertySet[] getSet(DatasetFile dataset)
 		{
 			return set;
 		}
@@ -153,7 +153,7 @@ public class TestUtil
 
 	public static class StructuralPropertiesCreator implements MoleculePropertySetCreator
 	{
-		public MoleculePropertySet[] getSet(DatasetFile dataset)
+		public CompoundPropertySet[] getSet(DatasetFile dataset)
 		{
 			return StructuralFragments.instance.getSets();
 		}
@@ -177,7 +177,7 @@ public class TestUtil
 		}
 
 		@Override
-		public MoleculePropertySet[] getSet(DatasetFile dataset)
+		public CompoundPropertySet[] getSet(DatasetFile dataset)
 		{
 			StructuralFragmentProperties.resetDefaults();
 			StructuralFragmentProperties.setMatchEngine(MatchEngine.OpenBabel);
@@ -187,7 +187,7 @@ public class TestUtil
 				StructuralFragmentProperties.setMinFrequency(minFrequency);
 
 			if (onlyFP2)
-				return new MoleculePropertySet[] { OBFingerprintSet.FINGERPRINTS[0] };
+				return new CompoundPropertySet[] { OBFingerprintSet.FINGERPRINTS[0] };
 			else
 				return OBFingerprintSet.FINGERPRINTS;
 		}
@@ -196,21 +196,21 @@ public class TestUtil
 	public static class CDKFingerprintCreator extends StructuralPropertiesCreator
 	{
 		@Override
-		public MoleculePropertySet[] getSet(DatasetFile dataset)
+		public CompoundPropertySet[] getSet(DatasetFile dataset)
 		{
 			StructuralFragmentProperties.resetDefaults();
-			return new MoleculePropertySet[] { CDKFingerprintSet.FINGERPRINTS[1] };
+			return new CompoundPropertySet[] { CDKFingerprintSet.FINGERPRINTS[1] };
 		}
 	}
 
 	public static class OBCarcMutRulesCreator extends StructuralPropertiesCreator
 	{
 		@Override
-		public MoleculePropertySet[] getSet(DatasetFile dataset)
+		public CompoundPropertySet[] getSet(DatasetFile dataset)
 		{
 			StructuralFragmentProperties.resetDefaults();
 			StructuralFragmentProperties.setMatchEngine(MatchEngine.OpenBabel);
-			return new MoleculePropertySet[] { StructuralFragments.instance
+			return new CompoundPropertySet[] { StructuralFragments.instance
 					.findFromString("Smarts file: ToxTree_BB_CarcMutRules") };
 		}
 	}
@@ -218,11 +218,11 @@ public class TestUtil
 	public static class CDKCarcMutRulesCreator extends StructuralPropertiesCreator
 	{
 		@Override
-		public MoleculePropertySet[] getSet(DatasetFile dataset)
+		public CompoundPropertySet[] getSet(DatasetFile dataset)
 		{
 			StructuralFragmentProperties.resetDefaults();
 			StructuralFragmentProperties.setMatchEngine(MatchEngine.CDK);
-			return new MoleculePropertySet[] { StructuralFragments.instance
+			return new CompoundPropertySet[] { StructuralFragments.instance
 					.findFromString("Smarts file: ToxTree_BB_CarcMutRules") };
 		}
 	}
@@ -231,11 +231,11 @@ public class TestUtil
 	public static class CDKCarcMutRulesCreator2 extends StructuralPropertiesCreator
 	{
 		@Override
-		public MoleculePropertySet[] getSet(DatasetFile dataset)
+		public CompoundPropertySet[] getSet(DatasetFile dataset)
 		{
 			StructuralFragmentProperties.resetDefaults();
 			StructuralFragmentProperties.setMatchEngine(MatchEngine.CDK);
-			return new MoleculePropertySet[] { StructuralFragments.instance
+			return new CompoundPropertySet[] { StructuralFragments.instance
 					.findFromString("Smarts file: ToxTree_BB_CarcMutRules") };
 		}
 	}
@@ -243,7 +243,7 @@ public class TestUtil
 	public static class OBStructuralPropertiesCreator extends StructuralPropertiesCreator
 	{
 		@Override
-		public MoleculePropertySet[] getSet(DatasetFile dataset)
+		public CompoundPropertySet[] getSet(DatasetFile dataset)
 		{
 			StructuralFragmentProperties.resetDefaults();
 			StructuralFragmentProperties.setMatchEngine(MatchEngine.OpenBabel);
@@ -254,7 +254,7 @@ public class TestUtil
 	public static class CDKStructuralPropertiesCreator extends StructuralPropertiesCreator
 	{
 		@Override
-		public MoleculePropertySet[] getSet(DatasetFile dataset)
+		public CompoundPropertySet[] getSet(DatasetFile dataset)
 		{
 			StructuralFragmentProperties.resetDefaults();
 			StructuralFragmentProperties.setMatchEngine(MatchEngine.CDK);
@@ -272,7 +272,7 @@ public class TestUtil
 		}
 
 		@Override
-		public MoleculePropertySet[] getSet(DatasetFile dataset)
+		public CompoundPropertySet[] getSet(DatasetFile dataset)
 		{
 			StructuralFragmentProperties.setMatchEngine(random.nextBoolean() ? MatchEngine.CDK : MatchEngine.OpenBabel);
 			StructuralFragmentProperties.setMinFrequency(1 + random.nextInt(50));

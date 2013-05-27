@@ -26,7 +26,7 @@ import alg.align3d.ThreeDAligner;
 import alg.build3d.ThreeDBuilder;
 import alg.cluster.DatasetClusterer;
 import alg.embed3d.ThreeDEmbedder;
-import dataInterface.MoleculePropertySet;
+import dataInterface.CompoundPropertySet;
 
 public class WizardTest
 {
@@ -130,8 +130,8 @@ public class WizardTest
 		Assert.assertTrue(nextButton.isEnabled());
 
 		@SuppressWarnings("unchecked")
-		Selector<MoleculePropertySet> selector = (Selector<MoleculePropertySet>) SwingTestUtil.getOnlySelector(panel);
-		MoleculePropertySet set[] = selector.getSelected();
+		Selector<CompoundPropertySet> selector = (Selector<CompoundPropertySet>) SwingTestUtil.getOnlySelector(panel);
+		CompoundPropertySet set[] = selector.getSelected();
 		Assert.assertTrue(set.length == 0);
 
 		noFeatures();

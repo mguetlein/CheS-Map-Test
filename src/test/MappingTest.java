@@ -44,9 +44,9 @@ import alg.embed3d.Random3DEmbedder;
 import alg.embed3d.ThreeDEmbedder;
 import alg.embed3d.r.TSNEFeature3DEmbedder;
 import data.ClusteringData;
-import dataInterface.MoleculeProperty;
-import dataInterface.MoleculePropertySet;
-import dataInterface.MoleculePropertyUtil;
+import dataInterface.CompoundProperty;
+import dataInterface.CompoundPropertySet;
+import dataInterface.CompoundPropertyUtil;
 
 public class MappingTest
 {
@@ -254,7 +254,7 @@ public class MappingTest
 			//				Assert.fail("could not load dataset" + e);
 			//			}
 
-			MoleculePropertySet[] featureSet = featureFilter.filterSet(featureCreator.getSet(datasetProvider
+			CompoundPropertySet[] featureSet = featureFilter.filterSet(featureCreator.getSet(datasetProvider
 					.getDatasetFile()));
 
 			System.err.println("t> do mapping");
@@ -277,9 +277,9 @@ public class MappingTest
 				}
 				else
 				{
-					List<MoleculeProperty> featuresWithInfo = new ArrayList<MoleculeProperty>();
-					for (MoleculeProperty p : clustering.getFeatures())
-						if (!MoleculePropertyUtil.hasUniqueValue(p, datasetProvider.getDatasetFile()))
+					List<CompoundProperty> featuresWithInfo = new ArrayList<CompoundProperty>();
+					for (CompoundProperty p : clustering.getFeatures())
+						if (!CompoundPropertyUtil.hasUniqueValue(p, datasetProvider.getDatasetFile()))
 							featuresWithInfo.add(p);
 
 					if (ch.getClusterException() != null)

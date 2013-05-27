@@ -33,10 +33,10 @@ import data.DatasetFile;
 import data.DefaultFeatureComputer;
 import dataInterface.ClusterData;
 import dataInterface.CompoundData;
-import dataInterface.MolecularPropertyOwner;
-import dataInterface.MoleculeProperty;
-import dataInterface.MoleculePropertySet;
-import dataInterface.MoleculePropertyUtil;
+import dataInterface.CompoundPropertyOwner;
+import dataInterface.CompoundProperty;
+import dataInterface.CompoundPropertySet;
+import dataInterface.CompoundPropertyUtil;
 import datamining.ResultSet;
 import datamining.ResultSetIO;
 
@@ -109,13 +109,13 @@ public class RuntimeEval
 	public static void computeFeatures(AlgorithmWrapper alg, DatasetFile dataset)
 	{
 		long start = System.currentTimeMillis();
-		MoleculePropertySet[] featureSet = ((WrappedFeatureComputer) alg).getSet(dataset);
+		CompoundPropertySet[] featureSet = ((WrappedFeatureComputer) alg).getSet(dataset);
 		FeatureComputer featureComputer = new DefaultFeatureComputer(featureSet);
 		featureComputer.computeFeatures(dataset);
 		resultSet.setResultValue(result, alg.getName(), System.currentTimeMillis() - start);
 	}
 
-	private static List<MoleculeProperty> featuresFirst(DatasetFile dataset, boolean cdkFeatures,
+	private static List<CompoundProperty> featuresFirst(DatasetFile dataset, boolean cdkFeatures,
 			ClusteringData clustering)
 	{
 		Settings.CACHING_ENABLED = true;
@@ -138,15 +138,15 @@ public class RuntimeEval
 		resultSet.setResultValue(result, "Features", featureComputer.getFeatures().size()
 				+ (cdkFeatures ? " CDK" : (" LinFrag (f=" + minFrequency) + ")"));
 
-		for (MoleculeProperty f : featureComputer.getFeatures())
+		for (CompoundProperty f : featureComputer.getFeatures())
 			clustering.addFeature(f);
-		for (MoleculeProperty p : featureComputer.getProperties())
+		for (CompoundProperty p : featureComputer.getProperties())
 			clustering.addProperty(p);
 		for (CompoundData c : featureComputer.getCompounds())
 			clustering.addCompound(c);
-		List<MoleculeProperty> featuresWithInfo = new ArrayList<MoleculeProperty>();
-		for (MoleculeProperty p : clustering.getFeatures())
-			if (!MoleculePropertyUtil.hasUniqueValue(p, dataset))
+		List<CompoundProperty> featuresWithInfo = new ArrayList<CompoundProperty>();
+		for (CompoundProperty p : clustering.getFeatures())
+			if (!CompoundPropertyUtil.hasUniqueValue(p, dataset))
 				featuresWithInfo.add(p);
 		Settings.CACHING_ENABLED = false;
 		return featuresWithInfo;
@@ -157,7 +157,7 @@ public class RuntimeEval
 		String name = alg.getName();
 		ClusteringData clustering = new ClusteringData(dataset.getName(), dataset.getFullName(),
 				dataset.getSDFPath(true));
-		List<MoleculeProperty> features = featuresFirst(dataset, cdkFeatures, clustering);
+		List<CompoundProperty> features = featuresFirst(dataset, cdkFeatures, clustering);
 		long start = System.currentTimeMillis();
 		((DatasetClusterer) alg.get()).clusterDataset(dataset, clustering.getCompounds(), features);
 		resultSet.setResultValue(result, name, System.currentTimeMillis() - start);
@@ -168,12 +168,12 @@ public class RuntimeEval
 		String name = alg.getName();
 		ClusteringData clustering = new ClusteringData(dataset.getName(), dataset.getFullName(),
 				dataset.getSDFPath(true));
-		List<MoleculeProperty> features = featuresFirst(dataset, cdkFeatures, clustering);
+		List<CompoundProperty> features = featuresFirst(dataset, cdkFeatures, clustering);
 		long start = System.currentTimeMillis();
 
 		ThreeDEmbedder emb = (ThreeDEmbedder) alg.get();
 
-		emb.embedDataset(dataset, ListUtil.cast(MolecularPropertyOwner.class, clustering.getCompounds()), features);
+		emb.embedDataset(dataset, ListUtil.cast(CompoundPropertyOwner.class, clustering.getCompounds()), features);
 		resultSet.setResultValue(result, name, System.currentTimeMillis() - start);
 
 		resultSet.setResultValue(result, name + " r^2", emb.getRSquare());
@@ -193,7 +193,7 @@ public class RuntimeEval
 	{
 		ClusteringData clustering = new ClusteringData(dataset.getName(), dataset.getFullName(),
 				dataset.getSDFPath(true));
-		List<MoleculeProperty> features = featuresFirst(dataset, false, clustering);
+		List<CompoundProperty> features = featuresFirst(dataset, false, clustering);
 
 		Settings.CACHING_ENABLED = true;
 		alignClusterer.clusterDataset(dataset, clustering.getCompounds(), features);
