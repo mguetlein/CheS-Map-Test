@@ -139,9 +139,9 @@ public class RuntimeEval
 				+ (cdkFeatures ? " CDK" : (" LinFrag (f=" + minFrequency) + ")"));
 
 		for (MoleculeProperty f : featureComputer.getFeatures())
-			clustering.addFeature(f, f.numDistinctValues(dataset));
+			clustering.addFeature(f);
 		for (MoleculeProperty p : featureComputer.getProperties())
-			clustering.addProperty(p, p.numDistinctValues(dataset));
+			clustering.addProperty(p);
 		for (CompoundData c : featureComputer.getCompounds())
 			clustering.addCompound(c);
 		List<MoleculeProperty> featuresWithInfo = new ArrayList<MoleculeProperty>();
