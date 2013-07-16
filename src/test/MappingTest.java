@@ -1,14 +1,15 @@
 package test;
 
 import gui.DatasetWizardPanel;
+import gui.LaunchCheSMapper;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Random;
 
-import main.BinHandler;
 import main.CheSMapping;
-import main.PropHandler;
+import main.ScreenSetup;
 import main.Settings;
 
 import org.junit.Assert;
@@ -59,8 +60,8 @@ public class MappingTest
 		System.err.println("seed: " + seed);
 		random = new Random(seed);
 
-		PropHandler.init(false);
-		BinHandler.init();
+		LaunchCheSMapper.init(Locale.US, ScreenSetup.DEFAULT, false);
+
 		Settings.CACHING_ENABLED = true;
 		MCSComputer.DEBUG = false;
 		MultiKabschAlignement.DEBUG = false;

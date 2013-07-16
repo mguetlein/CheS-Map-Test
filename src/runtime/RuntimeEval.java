@@ -1,6 +1,7 @@
 package runtime;
 
 import gui.DatasetWizardPanel;
+import gui.LaunchCheSMapper;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -8,8 +9,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Random;
 
-import main.BinHandler;
-import main.PropHandler;
+import main.ScreenSetup;
 import main.Settings;
 
 import org.junit.Assert;
@@ -33,8 +33,8 @@ import data.DatasetFile;
 import data.DefaultFeatureComputer;
 import dataInterface.ClusterData;
 import dataInterface.CompoundData;
-import dataInterface.CompoundPropertyOwner;
 import dataInterface.CompoundProperty;
+import dataInterface.CompoundPropertyOwner;
 import dataInterface.CompoundPropertySet;
 import dataInterface.CompoundPropertyUtil;
 import datamining.ResultSet;
@@ -58,8 +58,7 @@ public class RuntimeEval
 
 	static
 	{
-		PropHandler.init(false);
-		BinHandler.init();
+		LaunchCheSMapper.init(Locale.US, ScreenSetup.DEFAULT, false);
 
 		long seed = new Random().nextLong();
 		System.err.println("seed: " + seed);
@@ -155,8 +154,7 @@ public class RuntimeEval
 	public static void clusterDataset(AlgorithmWrapper alg, DatasetFile dataset, boolean cdkFeatures) throws Exception
 	{
 		String name = alg.getName();
-		ClusteringData clustering = new ClusteringData(dataset.getName(), dataset.getFullName(),
-				dataset.getSDFPath(true));
+		ClusteringData clustering = new ClusteringData(dataset);
 		List<CompoundProperty> features = featuresFirst(dataset, cdkFeatures, clustering);
 		long start = System.currentTimeMillis();
 		((DatasetClusterer) alg.get()).clusterDataset(dataset, clustering.getCompounds(), features);
@@ -166,8 +164,7 @@ public class RuntimeEval
 	public static void embedDataset(AlgorithmWrapper alg, DatasetFile dataset, boolean cdkFeatures) throws Exception
 	{
 		String name = alg.getName();
-		ClusteringData clustering = new ClusteringData(dataset.getName(), dataset.getFullName(),
-				dataset.getSDFPath(true));
+		ClusteringData clustering = new ClusteringData(dataset);
 		List<CompoundProperty> features = featuresFirst(dataset, cdkFeatures, clustering);
 		long start = System.currentTimeMillis();
 
@@ -191,8 +188,7 @@ public class RuntimeEval
 
 	public static void alignDataset(AlgorithmWrapper alg, DatasetFile dataset) throws Exception
 	{
-		ClusteringData clustering = new ClusteringData(dataset.getName(), dataset.getFullName(),
-				dataset.getSDFPath(true));
+		ClusteringData clustering = new ClusteringData(dataset);
 		List<CompoundProperty> features = featuresFirst(dataset, false, clustering);
 
 		Settings.CACHING_ENABLED = true;

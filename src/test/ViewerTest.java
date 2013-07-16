@@ -155,7 +155,7 @@ public class ViewerTest
 			Assert.assertFalse(modelList.isShowing());
 			Assert.assertFalse(viewer.isBlocked());
 			SwingTestUtil.clickList(clusterList, i + 1);
-			ThreadUtil.sleep(200);
+			ThreadUtil.sleep(100);
 			Assert.assertTrue(viewer.isBlocked());
 			while (viewer.isBlocked())
 			{
@@ -167,7 +167,7 @@ public class ViewerTest
 
 			int randomModel = random.nextInt(numCompoundsInClusters[i]);
 			SwingTestUtil.clickList(modelList, randomModel);
-			ThreadUtil.sleep(200);
+			ThreadUtil.sleep(100);
 			Assert.assertTrue(viewer.isBlocked());
 			while (viewer.isBlocked())
 			{
@@ -176,7 +176,7 @@ public class ViewerTest
 			}
 
 			SwingTestUtil.clickList(modelList, randomModel);
-			ThreadUtil.sleep(200);
+			ThreadUtil.sleep(100);
 			Assert.assertTrue(viewer.isBlocked());
 			while (viewer.isBlocked())
 			{
@@ -185,7 +185,7 @@ public class ViewerTest
 			}
 
 			SwingTestUtil.clickList(clusterList, 0);
-			ThreadUtil.sleep(200);
+			ThreadUtil.sleep(100);
 			Assert.assertTrue(viewer.isBlocked());
 			while (viewer.isBlocked())
 			{
