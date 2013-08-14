@@ -75,8 +75,8 @@ public class TestUtil
 		public CompoundPropertySet[] getSet(DatasetFile dataset)
 		{
 			List<CompoundPropertySet> l = new ArrayList<CompoundPropertySet>();
-			for (IntegratedProperty p : dataset.getIntegratedProperties(false))
-				if (p.getType() == Type.NOMINAL || p.getType() == Type.NUMERIC)
+			for (IntegratedProperty p : dataset.getIntegratedProperties())
+				if (!p.isSmiles() && (p.getType() == Type.NOMINAL || p.getType() == Type.NUMERIC))
 					l.add(p);
 			CompoundPropertySet[] a = new CompoundPropertySet[l.size()];
 			return l.toArray(a);
