@@ -15,7 +15,6 @@ import main.Settings;
 import org.junit.Assert;
 import org.openscience.cdk.isomorphism.MCSComputer;
 
-import util.ListUtil;
 import util.RuntimeUtil;
 import util.RuntimeUtil.AlgorithmWrapper;
 import util.RuntimeUtil.WrappedFeatureComputer;
@@ -34,7 +33,6 @@ import data.DefaultFeatureComputer;
 import dataInterface.ClusterData;
 import dataInterface.CompoundData;
 import dataInterface.CompoundProperty;
-import dataInterface.CompoundPropertyOwner;
 import dataInterface.CompoundPropertySet;
 import dataInterface.CompoundPropertyUtil;
 import datamining.ResultSet;
@@ -170,7 +168,7 @@ public class RuntimeEval
 
 		ThreeDEmbedder emb = (ThreeDEmbedder) alg.get();
 
-		emb.embedDataset(dataset, ListUtil.cast(CompoundPropertyOwner.class, clustering.getCompounds()), features);
+		emb.embedDataset(dataset, clustering.getCompounds(), features);
 		resultSet.setResultValue(result, name, System.currentTimeMillis() - start);
 
 		resultSet.setResultValue(result, name + " r^2", emb.getRSquare());
