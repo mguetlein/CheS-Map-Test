@@ -18,8 +18,12 @@ import javax.swing.JTextField;
 import main.Settings;
 
 import org.junit.Assert;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 
+import property.PropertySetCategory;
+import property.PropertySetProvider;
 import util.SwingTestUtil;
 import util.ThreadUtil;
 import alg.align3d.ThreeDAligner;
@@ -28,6 +32,7 @@ import alg.cluster.DatasetClusterer;
 import alg.embed3d.ThreeDEmbedder;
 import dataInterface.CompoundPropertySet;
 
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class WizardTest
 {
 	public static String DATA_DIR = "data/";
@@ -46,13 +51,15 @@ public class WizardTest
 			{
 				public void run()
 				{
-					LaunchCheSMapper.main(new String[] { "default", "no-properties" });
+					LaunchCheSMapper.main(new String[] { "--no-properties" });
 				}
 			});
 			th.start();
-			while (Settings.TOP_LEVEL_FRAME == null || !Settings.TOP_LEVEL_FRAME.isVisible())
+			while (SwingTestUtil.getOnlyVisibleFrame() == null)
 				ThreadUtil.sleep(50);
-			ThreadUtil.sleep(250);
+			SwingTestUtil.waitForGUI(250);
+			Assert.assertNotNull(Settings.TOP_LEVEL_FRAME);
+			Assert.assertTrue(Settings.TOP_LEVEL_FRAME.isVisible());
 			wizard = (CheSMapperWizard) Settings.TOP_LEVEL_FRAME;
 			nextButton = SwingTestUtil.getButton(wizard, "Next");
 			prevButton = SwingTestUtil.getButton(wizard, "Previous");
@@ -65,7 +72,7 @@ public class WizardTest
 	}
 
 	@Test
-	public void testDatasetPanel()
+	public void test1DatasetPanel()
 	{
 		DatasetWizardPanel panel = (DatasetWizardPanel) wizard.getCurrentPanel();
 		JTextField textField = SwingTestUtil.getOnlyTextField(panel);
@@ -108,13 +115,13 @@ public class WizardTest
 	}
 
 	@Test
-	public void testCreate3DPanel()
+	public void test2Create3DPanel()
 	{
 		Build3DWizardPanel panel = (Build3DWizardPanel) wizard.getCurrentPanel();
 		Assert.assertTrue(prevButton.isEnabled());
 		Assert.assertTrue(nextButton.isEnabled());
 
-		JList list = SwingTestUtil.getOnlyList(panel);
+		JList<?> list = SwingTestUtil.getOnlyList(panel);
 		for (int i = 0; i < list.getModel().getSize(); i++)
 			Assert.assertEquals(list.getModel().getElementAt(i), ThreeDBuilder.BUILDERS[i]);
 
@@ -123,20 +130,21 @@ public class WizardTest
 	}
 
 	@Test
-	public void testExtractFeaturesPanel()
+	public void test3ExtractFeaturesPanel()
 	{
 		FeatureWizardPanel panel = (FeatureWizardPanel) wizard.getCurrentPanel();
 		Assert.assertTrue(prevButton.isEnabled());
 		Assert.assertTrue(nextButton.isEnabled());
 
 		@SuppressWarnings("unchecked")
-		Selector<CompoundPropertySet> selector = (Selector<CompoundPropertySet>) SwingTestUtil.getOnlySelector(panel);
+		Selector<PropertySetCategory, CompoundPropertySet> selector = (Selector<PropertySetCategory, CompoundPropertySet>) SwingTestUtil
+				.getOnlySelector(panel);
 		CompoundPropertySet set[] = selector.getSelected();
 		Assert.assertTrue(set.length == 0);
 
 		noFeatures();
 
-		selector.setCategorySelected("Included in the Dataset", true);
+		selector.setCategorySelected(PropertySetProvider.INSTANCE.getIntegratedCategory(), true);
 		set = selector.getSelected();
 		Assert.assertTrue(set.length == 5);
 
@@ -152,8 +160,15 @@ public class WizardTest
 
 		JRadioButton radio = SwingTestUtil.getRadioButton(panel, "No");
 		Assert.assertTrue(radio.isShowing());
-		Assert.assertFalse(radio.isSelected());
+		Assert.assertTrue(radio.isSelected());
+		Assert.assertTrue(nextButton.isEnabled());
+
+		JRadioButton radio2 = SwingTestUtil.getRadioButton(panel, "Yes");
+		Assert.assertTrue(radio2.isShowing());
+		Assert.assertFalse(radio2.isSelected());
+		radio2.doClick();
 		Assert.assertFalse(nextButton.isEnabled());
+
 		radio.doClick();
 		Assert.assertTrue(radio.isSelected());
 		Assert.assertTrue(nextButton.isEnabled());
@@ -176,7 +191,7 @@ public class WizardTest
 	}
 
 	@Test
-	public void testClusterPanel()
+	public void test4ClusterPanel()
 	{
 		ClusterWizardPanel panel = (ClusterWizardPanel) wizard.getCurrentPanel();
 		Assert.assertTrue(prevButton.isEnabled());
@@ -184,7 +199,7 @@ public class WizardTest
 
 		JButton toggleButton = SwingTestUtil.getButton(panel, "Advanced >>");
 
-		JRadioButton radio = SwingTestUtil.getRadioButton(panel, "Yes (recommended)");
+		JRadioButton radio = SwingTestUtil.getRadioButton(panel, "Yes");
 		Assert.assertTrue(radio.isShowing());
 		radio.doClick();
 		Assert.assertTrue(radio.isSelected());
@@ -193,7 +208,7 @@ public class WizardTest
 		toggleButton.doClick();
 		Assert.assertTrue(toggleButton.getText().equals("<< Simple"));
 		Assert.assertFalse(radio.isShowing());
-		JList list = SwingTestUtil.getOnlyList(panel);
+		JList<?> list = SwingTestUtil.getOnlyList(panel);
 		for (int i = 0; i < list.getModel().getSize(); i++)
 			Assert.assertEquals(list.getModel().getElementAt(i), DatasetClusterer.CLUSTERERS[i]);
 
@@ -206,7 +221,7 @@ public class WizardTest
 	}
 
 	@Test
-	public void testEmbedPanel()
+	public void test5EmbedPanel()
 	{
 		EmbedWizardPanel panel = (EmbedWizardPanel) wizard.getCurrentPanel();
 		Assert.assertTrue(prevButton.isEnabled());
@@ -223,7 +238,7 @@ public class WizardTest
 		toggleButton.doClick();
 		Assert.assertTrue(toggleButton.getText().equals("<< Simple"));
 		Assert.assertFalse(radio.isShowing());
-		JList list = SwingTestUtil.getOnlyList(panel);
+		JList<?> list = SwingTestUtil.getOnlyList(panel);
 		for (int i = 0; i < list.getModel().getSize(); i++)
 			Assert.assertEquals(list.getModel().getElementAt(i), ThreeDEmbedder.EMBEDDERS[i]);
 
@@ -236,19 +251,19 @@ public class WizardTest
 	}
 
 	@Test
-	public void testAlignPanel()
+	public void test6AlignPanel()
 	{
 		AlignWizardPanel panel = (AlignWizardPanel) wizard.getCurrentPanel();
 		Assert.assertTrue(prevButton.isEnabled());
 		Assert.assertFalse(nextButton.isEnabled());
 
-		JList list = SwingTestUtil.getOnlyList(panel);
+		JList<?> list = SwingTestUtil.getOnlyList(panel);
 		for (int i = 0; i < list.getModel().getSize(); i++)
 			Assert.assertEquals(list.getModel().getElementAt(i), ThreeDAligner.ALIGNER[i]);
 	}
 
 	@Test
-	public void testCloseWizard() throws Exception
+	public void test7CloseWizard() throws Exception
 	{
 		closeButton.doClick();
 		Assert.assertFalse(wizard.isVisible());

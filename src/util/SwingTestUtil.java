@@ -1,6 +1,7 @@
 package util;
 
 import gui.Selector;
+import gui.swing.ComponentFactory.ClickableLabel;
 
 import java.awt.Component;
 import java.awt.Container;
@@ -16,6 +17,7 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JMenu;
@@ -25,22 +27,39 @@ import javax.swing.JPopupMenu;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 import javax.swing.text.JTextComponent;
 
 import org.junit.Assert;
 
 public class SwingTestUtil
 {
+	public static JFrame getOnlyVisibleFrame()
+	{
+		JFrame f = null;
+		for (Window w : Window.getWindows())
+			if (w instanceof JFrame && w.isVisible())
+			{
+				if (f != null)
+					throw new IllegalStateException("num frames > 1");
+				f = (JFrame) w;
+			}
+		return f;
+	}
+
 	public static JDialog getOnlyVisibleDialog(Window owner)
 	{
 		JDialog d = null;
 		for (Window w : Window.getWindows())
+		{
+			//			System.out.println("found " + w + " " + w.getOwner());
 			if (w instanceof JDialog && w.isVisible() && ((JDialog) w).getOwner() == owner)
 			{
 				if (d != null)
 					throw new IllegalStateException("num dialogs > 1");
 				d = (JDialog) w;
 			}
+		}
 		return d;
 	}
 
@@ -55,9 +74,9 @@ public class SwingTestUtil
 
 	public static void assertErrorDialog(Window owner, String titleMatch, String contentMatch)
 	{
-		ThreadUtil.sleep(200);
+		SwingTestUtil.waitForGUI(250);
 		JDialog d = getOnlyVisibleDialog(owner);
-		Assert.assertNotNull(d);
+		Assert.assertNotNull("no visible dialog found with owner " + owner, d);
 		Assert.assertTrue("title is '" + d.getTitle() + "', does not match '" + titleMatch + "'",
 				d.getTitle().matches("(?i).*" + titleMatch + ".*"));
 		//		String content = getAllText(d);
@@ -69,7 +88,14 @@ public class SwingTestUtil
 		Assert.assertNotNull(close);
 		close.doClick();
 		Assert.assertFalse(d.isVisible());
-		ThreadUtil.sleep(200);
+		SwingTestUtil.waitForGUI(250);
+	}
+
+	public static void waitForGUI(long milliseconds)
+	{
+		SwingUtil.waitForAWTEventThread();
+		ThreadUtil.sleep(milliseconds);
+		SwingUtil.waitForAWTEventThread();
 	}
 
 	public static JMenuItem getMenuItem(JMenuBar menu, String text)
@@ -182,9 +208,9 @@ public class SwingTestUtil
 		return (JTextField) getOnlyComponent(owner, JTextField.class);
 	}
 
-	public static JList getOnlyList(Container owner)
+	public static JList<?> getOnlyList(Container owner)
 	{
-		return (JList) getOnlyComponent(owner, JList.class);
+		return (JList<?>) getOnlyComponent(owner, JList.class);
 	}
 
 	public static JButton getOnlyButton(Container owner)
@@ -197,9 +223,30 @@ public class SwingTestUtil
 		return (JPopupMenu) getOnlyComponent(owner, JPopupMenu.class);
 	}
 
-	public static Selector<?> getOnlySelector(Container owner)
+	public static Selector<?, ?> getOnlySelector(Container owner)
 	{
-		return (Selector<?>) getOnlyComponent(owner, Selector.class);
+		return (Selector<?, ?>) getOnlyComponent(owner, Selector.class);
+	}
+
+	public static ClickableLabel getVisibleClickableLabel(Container owner, int swingConstantOrientation)
+	{
+		ClickableLabel l = null;
+		for (JComponent c : getComponents(owner, ClickableLabel.class))
+		{
+			if (c.isShowing())
+			{
+				if (l != null)
+				{
+					if (swingConstantOrientation == SwingConstants.TOP)
+						l = (ClickableLabel) ((l.getBounds().y < c.getBounds().y) ? l : c);
+					else
+						throw new IllegalStateException();
+				}
+				else
+					l = (ClickableLabel) c;
+			}
+		}
+		return l;
 	}
 
 	private static JComponent getOnlyComponent(Container owner, Class<?> clazz)
@@ -226,7 +273,7 @@ public class SwingTestUtil
 		return list;
 	}
 
-	public static void clickList(JList list, int index)
+	public static void clickList(JList<?> list, int index)
 	{
 		try
 		{
@@ -234,6 +281,24 @@ public class SwingTestUtil
 			Point p = list.getLocationOnScreen();
 			Point p2 = list.indexToLocation(index);
 			r.mouseMove(p.x + p2.x + 5, p.y + p2.y + 5);
+			waitForGUI(250);
+			r.mousePress(InputEvent.BUTTON1_MASK);
+			r.mouseRelease(InputEvent.BUTTON1_MASK);
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
+	}
+
+	public static void clickXButton(ClickableLabel lab)
+	{
+		try
+		{
+			Robot r = new Robot(ScreenUtil.getGraphicsDevice(ScreenUtil.getScreen((Window) lab.getTopLevelAncestor())));
+			Point p = lab.getLocationOnScreen();
+			r.mouseMove(p.x + 5, p.y + 5);
+			waitForGUI(250);
 			r.mousePress(InputEvent.BUTTON1_MASK);
 			r.mouseRelease(InputEvent.BUTTON1_MASK);
 		}
@@ -245,7 +310,7 @@ public class SwingTestUtil
 
 	public static void main(String args[])
 	{
-		final JList l = new JList(
+		final JList<String> l = new JList<String>(
 				"alsjkf asölkfjaölskfj ölaskjflaskdjf iosdfosdf sdk slfdjk aölskfj lskfdj sldkfj".split(" "));
 		JScrollPane scroll = new JScrollPane(l);
 		SwingUtil.showInDialog(scroll, "test", null, new Runnable()
