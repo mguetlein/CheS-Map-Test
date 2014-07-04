@@ -13,7 +13,7 @@ public class TestLauncher
 	{
 		JUnitCore junit = new JUnitCore();
 		junit.addListener(new TextListener(System.out));
-		Result result = junit.run(MappingTest.class);
+		Result result = junit.run(MappingAndExportTest.class);
 		System.out.println("");
 		System.out.println("Number of test failures: " + result.getFailureCount() + ", Runtime: "
 				+ TimeFormatUtil.format(result.getRunTime()));
