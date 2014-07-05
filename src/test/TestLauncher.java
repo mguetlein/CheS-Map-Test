@@ -9,8 +9,12 @@ import util.TimeFormatUtil;
 
 public class TestLauncher
 {
+	public static boolean SHORT_TEST = false;
+
 	public static void main(String[] args)
 	{
+		if (args != null && args.length > 1 && args[0].equals("short"))
+			SHORT_TEST = true;
 		JUnitCore junit = new JUnitCore();
 		junit.addListener(new TextListener(System.out));
 		Result result = junit.run(MappingAndExportTest.class);

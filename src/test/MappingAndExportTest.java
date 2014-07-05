@@ -3,20 +3,27 @@ package test;
 import gui.LaunchCheSMapper;
 import io.SDFUtil;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Random;
+import java.util.Set;
 
+import main.BinHandler;
 import main.CheSMapping;
 import main.Settings;
 
 import org.junit.Assert;
 import org.junit.Test;
 
-import property.ListedFragmentSet;
+import property.CDKFingerprintSet;
+import property.FminerPropertySet;
+import property.OBFingerprintSet;
 import property.PropertySetProvider;
+import property.PropertySetProvider.PropertySetShortcut;
 import util.ArrayUtil;
 import util.DoubleKeyHashMap;
 import util.FileUtil;
@@ -42,11 +49,19 @@ import data.fragments.MatchEngine;
 import dataInterface.CompoundPropertySet;
 import dataInterface.CompoundPropertySet.Type;
 import dataInterface.CompoundPropertyUtil;
-import dataInterface.FragmentProperty.SubstructureType;
 import dataInterface.FragmentPropertySet;
 
 public class MappingAndExportTest
 {
+	static
+	{
+		LaunchCheSMapper.init();
+		LaunchCheSMapper.setExitOnClose(false);
+		String version = BinHandler.getOpenBabelVersion();
+		if (!version.equals("2.3.2"))
+			throw new IllegalStateException("tests require obenbabel version 2.3.2, is: " + version);
+	}
+
 	static class Dataset
 	{
 		String name;
@@ -86,7 +101,6 @@ public class MappingAndExportTest
 	static Dataset D_SMI = new Dataset("demo.smi", 10, new String[] {}, null, "");
 	static Dataset D_CSV = new Dataset("caco2_20.csv", 20, new String[] { "name", "caco2", "logD", "rgyr", "HCPSA",
 			"fROTB" }, null, "logD,rgyr,HCPSA,fROTB");
-	static Dataset datasets[] = new Dataset[] { D_SMI, D_INCHI, D_SDF, D_CSV };
 
 	static class Feature
 	{
@@ -95,6 +109,15 @@ public class MappingAndExportTest
 		Integer minFreq;
 		private MatchEngine matchEngine = MatchEngine.OpenBabel;
 		HashMap<Dataset, Integer> numFragments = new HashMap<Dataset, Integer>();
+
+		@Override
+		public String toString()
+		{
+			String s = shortName;
+			if (minFreq != null)
+				s += " f:" + minFreq + " m:" + matchEngine;
+			return s;
+		}
 
 		public Feature(String shortName, String[] featureNames)
 		{
@@ -113,363 +136,465 @@ public class MappingAndExportTest
 		}
 	}
 
+	final static Dataset datasets[];
+	final static DatasetClusterer clusterers[];
+	final static ThreeDEmbedder embedders[];
+	final static PropertySetShortcut featureTypes[];
+	final static int minFreq[];
+	final static MatchEngine matchEngines[];
+	static boolean caching[];
+	static
+	{//complete
+		if (TestLauncher.SHORT_TEST)
+		{
+			datasets = new Dataset[] { D_SMI };
+			clusterers = new DatasetClusterer[] { NoClusterer.INSTANCE };
+			embedders = new ThreeDEmbedder[] { Random3DEmbedder.INSTANCE };
+			featureTypes = new PropertySetShortcut[] { PropertySetShortcut.ob };
+			minFreq = null;
+			matchEngines = null;
+			caching = new boolean[] { false };
+		}
+		else
+		{
+			datasets = new Dataset[] { D_SMI, D_INCHI, D_SDF, D_CSV };
+			clusterers = new DatasetClusterer[] { NoClusterer.INSTANCE, WekaClusterer.WEKA_CLUSTERER[0],
+					DynamicTreeCutHierarchicalRClusterer.INSTANCE };
+			embedders = new ThreeDEmbedder[] { Random3DEmbedder.INSTANCE, WekaPCA3DEmbedder.INSTANCE,
+					Sammon3DEmbedder.INSTANCE };
+			featureTypes = PropertySetShortcut.values();
+			minFreq = new int[] { 0, 1, 2 };
+			matchEngines = new MatchEngine[] { MatchEngine.OpenBabel, MatchEngine.CDK };
+			caching = new boolean[] { false, false, true };
+		}
+	}
+	//	static
+	//	{//debug
+	//		//datasets = new Dataset[] { D_SDF };
+	//		datasets = new Dataset[] { D_SMI, D_INCHI, D_SDF, D_CSV };
+	//		clusterers = new DatasetClusterer[] { NoClusterer.INSTANCE };
+	//		embedders = new ThreeDEmbedder[] { Random3DEmbedder.INSTANCE };
+	//		//featureTypes = new PropertySetShortcut[] { PropertySetShortcut.cdkFunct };
+	//		featureTypes = new PropertySetShortcut[] { PropertySetShortcut.cdkFunct, PropertySetShortcut.obFP2,
+	//				PropertySetShortcut.obFP3, PropertySetShortcut.obFP4, PropertySetShortcut.obMACCS,
+	//				PropertySetShortcut.benigniBossa };
+	//		minFreq = new int[] { 0, 1, 2 };
+	//		matchEngines = new MatchEngine[] { MatchEngine.OpenBabel, MatchEngine.CDK };
+	//		caching = new boolean[] { false };//, false, true };
+	//	}
+
 	static List<Feature> features = new ArrayList<Feature>();
+
 	static
 	{
-		LaunchCheSMapper.init();
-		LaunchCheSMapper.setExitOnClose(false);
-
-		//for (PropertySetShortcut c : new PropertySetShortcut[] { PropertySetShortcut.cdkFunct })
-		//		for (PropertySetShortcuts c : new PropertySetShortcuts[] { PropertySetShortcuts.obFP2,
-		//				PropertySetShortcuts.obFP3, PropertySetShortcuts.obFP4, PropertySetShortcuts.obMACCS,
-		//				PropertySetShortcuts.benigniBossa })
 		//		for (PropertySetShortcuts c : new PropertySetShortcuts[] { PropertySetShortcuts.ob,
 		//				PropertySetShortcuts.cdk })
-		for (PropertySetProvider.PropertySetShortcut c : PropertySetProvider.PropertySetShortcut.values())
+		for (PropertySetShortcut c : featureTypes)
 		{
-			if (c == PropertySetProvider.PropertySetShortcut.fminer)
+			if (c == PropertySetShortcut.fminer)
 				continue;
 
 			List<String> props = new ArrayList<String>();
 			CompoundPropertySet sets[] = null;
-			if (c != PropertySetProvider.PropertySetShortcut.integrated)
+			if (c != PropertySetShortcut.integrated)
 			{
 				sets = PropertySetProvider.INSTANCE.getDescriptorSets(null, c);
 				for (CompoundPropertySet set : sets)
 				{
-					if ((c == PropertySetProvider.PropertySetShortcut.cdk || c == PropertySetProvider.PropertySetShortcut.ob)
-							&& set.getType() != Type.NUMERIC)
+					if ((c == PropertySetShortcut.cdk || c == PropertySetShortcut.ob) && set.getType() != Type.NUMERIC)
 						continue;
 					if (!set.isSizeDynamic())
 						for (int i = 0; i < set.getSize(null); i++)
 							props.add(CompoundPropertyUtil.propToExportString(set.get(null, i)));
 				}
 			}
-
-			Feature f = new Feature(c.toString(), ListUtil.toArray(String.class, props));
-			features.add(f);
-			if (sets != null && sets[0] instanceof FragmentPropertySet)
+			if (sets == null || !(sets[0] instanceof FragmentPropertySet))
 			{
-				Feature fOB1 = f;
-				fOB1.minFreq = 1;
-				if (c == PropertySetProvider.PropertySetShortcut.benigniBossa)
+				features.add(new Feature(c.toString(), ListUtil.toArray(String.class, props)));
+			}
+			else
+			{
+				for (int minF : minFreq)
 				{
-					fOB1.numFragments.put(D_INCHI, 0);
-					fOB1.numFragments.put(D_SDF, 1);
-					fOB1.numFragments.put(D_CSV, 6);
-					fOB1.numFragments.put(D_SMI, 2);
-				}
-				else if (c == PropertySetProvider.PropertySetShortcut.obFP2)
-				{
-					fOB1.numFragments.put(D_CSV, 825);
-					fOB1.numFragments.put(D_SMI, 432);
-				}
-				else if (c == PropertySetProvider.PropertySetShortcut.obFP3)
-				{
-					fOB1.numFragments.put(D_INCHI, 8);
-				}
-				else if (c == PropertySetProvider.PropertySetShortcut.obFP4)
-				{
-					fOB1.numFragments.put(D_INCHI, 19);
-					fOB1.numFragments.put(D_SMI, 48);
-				}
-				else if (c == PropertySetProvider.PropertySetShortcut.obMACCS)
-				{
-					fOB1.numFragments.put(D_SMI, 111);
-				}
-				else if (c == PropertySetProvider.PropertySetShortcut.cdkFunct)
-				{
-					fOB1.matchEngine = MatchEngine.CDK;
-					fOB1.numFragments.put(D_SDF, 14);
-					fOB1.numFragments.put(D_INCHI, 6);
-					fOB1.numFragments.put(D_CSV, 38);
-				}
-
-				Feature fOB2 = new Feature(f.shortName, f.featureNames, 2, MatchEngine.OpenBabel);
-				features.add(fOB2);
-				if (c == PropertySetProvider.PropertySetShortcut.benigniBossa)
-				{
-					fOB2.numFragments.put(D_INCHI, 0);
-					fOB2.numFragments.put(D_SDF, 1);
-				}
-				else if (c == PropertySetProvider.PropertySetShortcut.obFP3)
-				{
-					fOB2.numFragments.put(D_INCHI, 8);
-				}
-				else if (c == PropertySetProvider.PropertySetShortcut.cdkFunct)
-					fOB2.matchEngine = MatchEngine.CDK;
-
-				Feature fOB0 = new Feature(f.shortName, f.featureNames, 0, MatchEngine.OpenBabel);
-				features.add(fOB0);
-				if (c == PropertySetProvider.PropertySetShortcut.benigniBossa)
-				{
-					fOB0.numFragments.put(D_INCHI, 0);
-					fOB0.numFragments.put(D_SDF, 1);
-					fOB0.numFragments.put(D_SMI, 2);
-					fOB0.numFragments.put(D_CSV, 6);
-				}
-				else if (c == PropertySetProvider.PropertySetShortcut.obFP4)
-				{
-					fOB0.numFragments.put(D_INCHI, 19);
-					fOB0.numFragments.put(D_SMI, 48);
-				}
-				else if (c == PropertySetProvider.PropertySetShortcut.obMACCS)
-				{
-					fOB0.numFragments.put(D_SMI, 111);
-				}
-				else if (c == PropertySetProvider.PropertySetShortcut.obFP2)
-				{
-					fOB0.numFragments.put(D_CSV, 825);
-					fOB0.numFragments.put(D_SMI, 432);
-				}
-				else if (c == PropertySetProvider.PropertySetShortcut.cdkFunct)
-				{
-					fOB0.matchEngine = MatchEngine.CDK;
-					fOB0.numFragments.put(D_INCHI, 6);
-					fOB0.numFragments.put(D_CSV, 40);
-				}
-
-				if (sets[0].getSubstructureType() == SubstructureType.MATCH && sets[0] instanceof ListedFragmentSet)
-				{
-					Feature fCDK1 = new Feature(f.shortName, f.featureNames, 1, MatchEngine.CDK);
-					if (c == PropertySetProvider.PropertySetShortcut.benigniBossa)
+					for (MatchEngine matchE : matchEngines)
 					{
-						fCDK1.numFragments.put(D_INCHI, 0);
-						fCDK1.numFragments.put(D_SMI, 1);
-						fCDK1.numFragments.put(D_SDF, 0);
-						fCDK1.numFragments.put(D_CSV, 3);
+						if (sets[0] instanceof CDKFingerprintSet && matchE == MatchEngine.OpenBabel)
+							continue;
+						if (sets[0] instanceof FminerPropertySet && matchE == MatchEngine.CDK)
+							continue;
+						if (sets[0] instanceof OBFingerprintSet && matchE == MatchEngine.CDK)
+							continue;
+
+						Feature f = new Feature(c.toString(), ListUtil.toArray(String.class, props), minF, matchE);
+						features.add(f);
+
+						if (c == PropertySetShortcut.benigniBossa)
+						{
+							if (minF == 0)
+							{
+								if (matchE == MatchEngine.OpenBabel)
+								{
+									f.numFragments.put(D_INCHI, 0);
+									f.numFragments.put(D_SDF, 1);
+									f.numFragments.put(D_SMI, 2);
+									f.numFragments.put(D_CSV, 6);
+								}
+								else if (matchE == MatchEngine.CDK)
+								{
+									f.numFragments.put(D_CSV, 3);
+									f.numFragments.put(D_INCHI, 0);
+									f.numFragments.put(D_SMI, 1);
+									f.numFragments.put(D_SDF, 0);
+								}
+							}
+							else if (minF == 1)
+							{
+								if (matchE == MatchEngine.OpenBabel)
+								{
+									f.numFragments.put(D_INCHI, 0);
+									f.numFragments.put(D_SDF, 1);
+									f.numFragments.put(D_CSV, 6);
+									f.numFragments.put(D_SMI, 2);
+								}
+								else if (matchE == MatchEngine.CDK)
+								{
+									f.numFragments.put(D_INCHI, 0);
+									f.numFragments.put(D_SMI, 1);
+									f.numFragments.put(D_SDF, 0);
+									f.numFragments.put(D_CSV, 3);
+								}
+							}
+							else if (minF == 2)
+							{
+								if (matchE == MatchEngine.OpenBabel)
+								{
+									f.numFragments.put(D_INCHI, 0);
+									f.numFragments.put(D_SDF, 1);
+								}
+								else if (matchE == MatchEngine.CDK)
+								{
+									f.numFragments.put(D_INCHI, 0);
+									f.numFragments.put(D_SMI, 1);
+									f.numFragments.put(D_SDF, 0);
+								}
+							}
+						}
+						else if (c == PropertySetShortcut.obFP2)
+						{
+							if (minF == 0)
+							{
+								f.numFragments.put(D_CSV, 825);
+								f.numFragments.put(D_SMI, 432);
+							}
+							else if (minF == 1)
+							{
+								f.numFragments.put(D_CSV, 825);
+								f.numFragments.put(D_SMI, 432);
+							}
+							else if (minF == 2)
+							{
+							}
+						}
+						else if (c == PropertySetShortcut.obFP3)
+						{
+							if (minF == 0)
+							{
+							}
+							else if (minF == 1)
+							{
+								f.numFragments.put(D_INCHI, 8);
+							}
+							else if (minF == 2)
+							{
+								f.numFragments.put(D_INCHI, 8);
+							}
+						}
+						else if (c == PropertySetShortcut.obFP4)
+						{
+							if (minF == 0)
+							{
+								f.numFragments.put(D_INCHI, 19);
+								f.numFragments.put(D_SMI, 48);
+							}
+							else if (minF == 1)
+							{
+								f.numFragments.put(D_INCHI, 19);
+								f.numFragments.put(D_SMI, 48);
+							}
+							else if (minF == 2)
+							{
+							}
+						}
+						else if (c == PropertySetShortcut.obMACCS)
+						{
+							if (minF == 0)
+							{
+								f.numFragments.put(D_SMI, 111);
+							}
+							else if (minF == 1)
+							{
+								f.numFragments.put(D_SMI, 111);
+							}
+							else if (minF == 2)
+							{
+							}
+						}
+						else if (c == PropertySetShortcut.cdkFunct)
+						{
+							if (minF == 0)
+							{
+								f.matchEngine = MatchEngine.CDK;
+								f.numFragments.put(D_INCHI, 6);
+								f.numFragments.put(D_CSV, 40);
+							}
+							else if (minF == 1)
+							{
+								f.matchEngine = MatchEngine.CDK;
+								f.numFragments.put(D_SDF, 14);
+								f.numFragments.put(D_INCHI, 6);
+								f.numFragments.put(D_CSV, 38);
+							}
+							else if (minF == 2)
+							{
+							}
+						}
 					}
-					Feature fCDK2 = new Feature(f.shortName, f.featureNames, 2, MatchEngine.CDK);
-					if (c == PropertySetProvider.PropertySetShortcut.benigniBossa)
-					{
-						fCDK2.numFragments.put(D_INCHI, 0);
-						fCDK2.numFragments.put(D_SMI, 1);
-						fCDK2.numFragments.put(D_SDF, 0);
-					}
-					Feature fCDK0 = new Feature(f.shortName, f.featureNames, 0, MatchEngine.CDK);
-					if (c == PropertySetProvider.PropertySetShortcut.benigniBossa)
-					{
-						fCDK0.numFragments.put(D_CSV, 3);
-						fCDK0.numFragments.put(D_INCHI, 0);
-						fCDK0.numFragments.put(D_SMI, 1);
-						fCDK0.numFragments.put(D_SDF, 0);
-					}
-					features.add(fCDK1);
-					features.add(fCDK2);
-					features.add(fCDK0);
 				}
 			}
 		}
 	}
 
-	static DatasetClusterer clusterers[] = new DatasetClusterer[] { NoClusterer.INSTANCE, //
-			WekaClusterer.WEKA_CLUSTERER[0], //
-			DynamicTreeCutHierarchicalRClusterer.INSTANCE, //
-	};
-
-	static ThreeDEmbedder embedders[] = new ThreeDEmbedder[] { Random3DEmbedder.INSTANCE, // 
-			WekaPCA3DEmbedder.INSTANCE, //
-			Sammon3DEmbedder.INSTANCE, //
-	};
+	public static Set<String> tmpfiles = new HashSet<String>();
 
 	@Test
 	public void test()
 	{
-		Random r = new Random();
-		ArrayUtil.scramble(datasets, r);
-		ListUtil.scramble(features, r);
-		ArrayUtil.scramble(clusterers, r);
-		ArrayUtil.scramble(embedders, r);
-		boolean CACHING[] = new boolean[] { false, false, true };
-
-		HashMap<String, String> positions = new HashMap<String, String>();
-		HashMap<String, String> outfiles = new HashMap<String, String>();
-
-		int max = CACHING.length * datasets.length * features.size() * clusterers.length * embedders.length;
-		int count = 0;
-
-		//boolean cache = false;
-		int cacheIdx = 0;
-		for (boolean cache : CACHING)
+		try
 		{
-			Settings.CACHING_ENABLED = cache;
+			Random r = new Random();
+			ArrayUtil.scramble(datasets, r);
+			ListUtil.scramble(features, r);
+			ArrayUtil.scramble(clusterers, r);
+			ArrayUtil.scramble(embedders, r);
 
-			int dIdx = 0;
-			for (Dataset data : datasets)
+			HashMap<String, String> positions = new HashMap<String, String>();
+			HashMap<String, String> outfiles = new HashMap<String, String>();
+
+			int max = caching.length * datasets.length * features.size() * clusterers.length * embedders.length;
+			int count = 0;
+
+			//boolean cache = false;
+			int cacheIdx = 0;
+			for (boolean cache : caching)
 			{
-				DatasetFile d = null;
-				DoubleKeyHashMap<String, Feature, Integer> numFeatures = new DoubleKeyHashMap<String, Feature, Integer>();
+				Settings.CACHING_ENABLED = cache;
 
-				int fIdx = 0;
-				for (Feature feat : features)
+				int dIdx = 0;
+				for (Dataset data : datasets)
 				{
-					int cIdx = 0;
-					for (DatasetClusterer clust : clusterers)
+					DatasetFile d = null;
+					DoubleKeyHashMap<String, Feature, Integer> numFeatures = new DoubleKeyHashMap<String, Feature, Integer>();
+
+					int fIdx = 0;
+					for (Feature feat : features)
 					{
-						int eIdx = 0;
-						for (ThreeDEmbedder emb : embedders)
+						int cIdx = 0;
+						for (DatasetClusterer clust : clusterers)
 						{
-							if ((clusterers.length == 1 && embedders.length == 1)
-									|| (clust == NoClusterer.INSTANCE && emb != Random3DEmbedder.INSTANCE)
-									|| (clust != NoClusterer.INSTANCE && emb == Random3DEmbedder.INSTANCE))
+							int eIdx = 0;
+							for (ThreeDEmbedder emb : embedders)
 							{
-								//					LaunchCheSMapper.main(new String[] { "-e", "--rem-missing-above-ratio", "1",
-								//							"--keep-uniform-values", "-d", "data/" + data.name, "-f", feat.shortName, "-o", res });
-
-								DescriptorSelection feats = new DescriptorSelection(feat.shortName,
-										data.integratedFeature, null, null, null);
-								if (feat.minFreq != null)
+								if ((clusterers.length == 1 && embedders.length == 1)
+										|| (clust == NoClusterer.INSTANCE && emb != Random3DEmbedder.INSTANCE)
+										|| (clust != NoClusterer.INSTANCE && emb == Random3DEmbedder.INSTANCE))
 								{
-									if (feat.minFreq == 0)
-										feats.setFingerprintSettings(1, false, feat.matchEngine);
-									else
-										feats.setFingerprintSettings(feat.minFreq, true, feat.matchEngine);
-								}
-								if (clust instanceof DynamicTreeCutHierarchicalRClusterer)
-									((DynamicTreeCutHierarchicalRClusterer) clust).setMinClusterSize(2);
+									//					LaunchCheSMapper.main(new String[] { "-e", "--rem-missing-above-ratio", "1",
+									//							"--keep-uniform-values", "-d", "data/" + data.name, "-f", feat.shortName, "-o", res });
 
-								Properties props = MappingWorkflow.createMappingWorkflow("data/" + data.name, feats,
-										clust, emb);
-
-								CheSMapping mapping = MappingWorkflow.createMappingFromMappingWorkflow(props, "");
-								d = mapping.getDatasetFile();
-
-								System.err.println(d + " " + d.hashCode());
-
-								ClusteringData clusteringData = mapping.doMapping();
-								ClusteringImpl clustering = new ClusteringImpl();
-								clustering.newClustering(clusteringData);
-
-								// check features
-								Assert.assertEquals(feats.getFeatures(d).size(), mapping.getNumFeatureSets());
-								System.err.println(data.name + " " + feat.shortName + " " + feat.minFreq + " "
-										+ feat.matchEngine + " num-features:" + clustering.getFeatures().size());
-								if (feat.numFragments.containsKey(data))
-									Assert.assertTrue(clustering.getFeatures().size() == feat.numFragments.get(data));
-								else if (feat.shortName.equals(PropertySetProvider.PropertySetShortcut.integrated
-										.toString()) && ObjectUtil.equals(data.integratedFeature, ""))
-									Assert.assertTrue(clustering.getFeatures().size() == 0);
-								else
-									Assert.assertTrue(clustering.getFeatures().size() > 0);
-
-								if (feat.minFreq != null)
-								{
-									String key = feat.shortName + feat.matchEngine;
-									numFeatures.put(key, feat, clustering.getFeatures().size());
-									Feature minFreq[] = ArrayUtil.toArray(new ArrayList<Feature>(numFeatures
-											.keySet2(key)));
-									for (int i = 0; i < minFreq.length - 1; i++)
+									DescriptorSelection feats = new DescriptorSelection(feat.shortName,
+											data.integratedFeature, null, null, null);
+									if (feat.minFreq != null)
 									{
-										for (int j = i + 1; j < minFreq.length; j++)
+										if (feat.minFreq == 0)
+											feats.setFingerprintSettings(1, false, feat.matchEngine);
+										else
+											feats.setFingerprintSettings(feat.minFreq, true, feat.matchEngine);
+									}
+									if (clust instanceof DynamicTreeCutHierarchicalRClusterer)
+										((DynamicTreeCutHierarchicalRClusterer) clust).setMinClusterSize(2);
+
+									Properties props = MappingWorkflow.createMappingWorkflow("data/" + data.name,
+											feats, clust, emb);
+
+									CheSMapping mapping = MappingWorkflow.createMappingFromMappingWorkflow(props, "");
+									d = mapping.getDatasetFile();
+
+									System.err.println(d + " " + d.hashCode());
+
+									ClusteringData clusteringData = mapping.doMapping();
+									ClusteringImpl clustering = new ClusteringImpl();
+									clustering.newClustering(clusteringData);
+
+									// check features
+									Assert.assertEquals(feats.getFeatures(d).size(), mapping.getNumFeatureSets());
+									System.err.println(data.name + " " + feat.shortName + " " + feat.minFreq + " "
+											+ feat.matchEngine + " num-features:" + clustering.getFeatures().size());
+									if (feat.numFragments.containsKey(data))
+										Assert.assertTrue(clustering.getFeatures().size() == feat.numFragments
+												.get(data));
+									else if (feat.shortName.equals(PropertySetShortcut.integrated.toString())
+											&& ObjectUtil.equals(data.integratedFeature, ""))
+										Assert.assertTrue(clustering.getFeatures().size() == 0);
+									else
+										Assert.assertTrue(clustering.getFeatures().size() > 0);
+
+									if (feat.minFreq != null)
+									{
+										String key = feat.shortName + feat.matchEngine;
+										numFeatures.put(key, feat, clustering.getFeatures().size());
+										Feature minFreq[] = ArrayUtil.toArray(new ArrayList<Feature>(numFeatures
+												.keySet2(key)));
+										for (int i = 0; i < minFreq.length - 1; i++)
 										{
-											Assert.assertNotEquals(minFreq[i].minFreq, minFreq[j].minFreq);
-											System.err.println("minF: " + minFreq[i].minFreq + ", num-features: "
-													+ numFeatures.get(key, minFreq[i]));
-											System.err.println("minF2: " + minFreq[j].minFreq + ", num-features: "
-													+ numFeatures.get(key, minFreq[j]));
-											if (minFreq[i].numFragments.containsKey(data)
-													&& minFreq[j].numFragments.containsKey(data))
+											for (int j = i + 1; j < minFreq.length; j++)
 											{
-												//do nothing, is checked explicitely
+												Assert.assertNotEquals(minFreq[i].minFreq, minFreq[j].minFreq);
+												System.err.println("minF: " + minFreq[i].minFreq + ", num-features: "
+														+ numFeatures.get(key, minFreq[i]));
+												System.err.println("minF2: " + minFreq[j].minFreq + ", num-features: "
+														+ numFeatures.get(key, minFreq[j]));
+												if (minFreq[i].numFragments.containsKey(data)
+														&& minFreq[j].numFragments.containsKey(data))
+												{
+													//do nothing, is checked explicitely
+												}
+												else if (minFreq[i].minFreq < minFreq[j].minFreq)
+													Assert.assertTrue(numFeatures.get(key, minFreq[i]) > numFeatures
+															.get(key, minFreq[j]));
+												else
+													Assert.assertTrue(numFeatures.get(key, minFreq[i]) < numFeatures
+															.get(key, minFreq[j]));
 											}
-											else if (minFreq[i].minFreq < minFreq[j].minFreq)
-												Assert.assertTrue(numFeatures.get(key, minFreq[i]) > numFeatures.get(
-														key, minFreq[j]));
-											else
-												Assert.assertTrue(numFeatures.get(key, minFreq[i]) < numFeatures.get(
-														key, minFreq[j]));
 										}
 									}
-								}
 
-								// check clustering result
-								DatasetClusterer usedClust = clusteringData.getDatasetClusterer();
-								if (clustering.getFeatures().size() == 0)
-									Assert.assertEquals(NoClusterer.INSTANCE, usedClust);
-								else
-									Assert.assertEquals(clust, usedClust);
-								if (usedClust != NoClusterer.INSTANCE)
-								{
-									Assert.assertTrue(clustering.getNumClusters() > 1);
-								}
-								else
-								{
-									Assert.assertTrue(clustering.getNumClusters() == 1);
-								}
-
-								// check embedding result
-								ThreeDEmbedder usedEmb = clusteringData.getThreeDEmbedder();
-								if (clustering.getFeatures().size() == 0
-										|| (emb instanceof AbstractRTo3DEmbedder && mapping.getEmbedException() != null
-												&& clustering.getFeatures().size() <= 10 && mapping.getEmbedException()
-												.getMessage().contains("Too few unique data points")))
-									Assert.assertEquals(Random3DEmbedder.INSTANCE, usedEmb);
-								else
-									Assert.assertEquals(emb, usedEmb);
-								if (usedEmb == Random3DEmbedder.INSTANCE)
-								{
-									Assert.assertNull(clusteringData.getEmbeddingQualityProperty());
-								}
-								else
-								{
-									Assert.assertNotNull(clusteringData.getEmbeddingQualityProperty());
-								}
-								String idxStr = dIdx + "." + fIdx + "." + cIdx + "." + eIdx + ".";
-								if (!positions.containsKey(idxStr))
-									positions.put(idxStr, ListUtil.toString(usedEmb.getPositions()));
-								else
-								{
-									System.err.println("checking that positions are equal " + idxStr);
-									Assert.assertEquals(positions.get(idxStr),
-											ListUtil.toString(usedEmb.getPositions()));
-								}
-
-								// check exporting result
-								String nonMissingValueProps[] = new String[0];
-								for (String output : new String[] { "csv", "sdf" })
-								{
-									String outfile = "/tmp/" + data.name + "." + cacheIdx + "." + idxStr + output;
-									ExportData.scriptExport(clustering, outfile, true, 1.0);
-									String key = idxStr + output;
-									if (!outfiles.containsKey(key))
-										outfiles.put(key, outfile);
+									// check clustering result
+									DatasetClusterer usedClust = clusteringData.getDatasetClusterer();
+									if (clustering.getFeatures().size() == 0)
+										Assert.assertEquals(NoClusterer.INSTANCE, usedClust);
+									else
+										Assert.assertEquals(clust, usedClust);
+									if (usedClust != NoClusterer.INSTANCE)
+									{
+										Assert.assertTrue(clustering.getNumClusters() > 1);
+									}
 									else
 									{
-										System.err.println("checking that outfiles are equal " + outfiles.get(key)
-												+ " and " + outfile);
-										Assert.assertEquals(FileUtil.getMD5String(outfiles.get(key)),
-												FileUtil.getMD5String(outfile));
+										Assert.assertTrue(clustering.getNumClusters() == 1);
 									}
 
-									String[] clusterProp = new String[0];
-									if (usedClust != NoClusterer.INSTANCE)
-										clusterProp = new String[] { (usedClust.getName() + " cluster assignement")
-												.replace(' ', '_') };
-									if (output.equals("csv"))
-										nonMissingValueProps = verifyExportResultCSV(outfile, data.size,
-												ArrayUtil.concat(String.class, data.integratedNonMissing, clusterProp),
-												ArrayUtil.concat(String.class, feat.featureNames,
-														data.integratedMissing));
+									// check embedding result
+									ThreeDEmbedder usedEmb = clusteringData.getThreeDEmbedder();
+									if (clustering.getFeatures().size() == 0
+											|| (emb instanceof AbstractRTo3DEmbedder
+													&& mapping.getEmbedException() != null
+													&& clustering.getFeatures().size() <= 10 && mapping
+													.getEmbedException().getMessage()
+													.contains("Too few unique data points")))
+										Assert.assertEquals(Random3DEmbedder.INSTANCE, usedEmb);
 									else
-										verifyExportResultSDF(outfile, data.size, nonMissingValueProps);
+										Assert.assertEquals(emb, usedEmb);
+									if (usedEmb == Random3DEmbedder.INSTANCE)
+									{
+										Assert.assertNull(clusteringData.getEmbeddingQualityProperty());
+									}
+									else
+									{
+										Assert.assertNotNull(clusteringData.getEmbeddingQualityProperty());
+									}
+									String idxStr = dIdx + "." + fIdx + "." + cIdx + "." + eIdx + ".";
+									if (!positions.containsKey(idxStr))
+										positions.put(idxStr, ListUtil.toString(usedEmb.getPositions()));
+									else
+									{
+										System.err.println("checking that positions are equal " + idxStr);
+										Assert.assertEquals(positions.get(idxStr),
+												ListUtil.toString(usedEmb.getPositions()));
+									}
+
+									// check exporting result
+									String nonMissingValueProps[] = new String[0];
+									for (String output : new String[] { "csv", "sdf" })
+									{
+										String outfile = "/tmp/" + data.name + "." + cacheIdx + "." + idxStr + output;
+										ExportData.scriptExport(clustering, outfile, true, 1.0);
+										tmpfiles.add(outfile);
+										String key = idxStr + output;
+										if (!outfiles.containsKey(key))
+											outfiles.put(key, outfile);
+										else
+										{
+											System.err.println("checking that outfiles are equal " + outfiles.get(key)
+													+ " and " + outfile);
+											Assert.assertEquals(FileUtil.getMD5String(outfiles.get(key)),
+													FileUtil.getMD5String(outfile));
+										}
+
+										String[] clusterProp = new String[0];
+										if (usedClust != NoClusterer.INSTANCE)
+											clusterProp = new String[] { (usedClust.getName() + " cluster assignement")
+													.replace(' ', '_') };
+										if (output.equals("csv"))
+											nonMissingValueProps = verifyExportResultCSV(outfile, data.size,
+													ArrayUtil.concat(String.class, data.integratedNonMissing,
+															clusterProp), ArrayUtil.concat(String.class,
+															feat.featureNames, data.integratedMissing));
+										else
+											verifyExportResultSDF(outfile, data.size, nonMissingValueProps);
+									}
 								}
+								else
+								{
+									System.err.println("skipping cluster - embedding combination");
+								}
+								String msg = (++count) + "/" + max + " done\n ";
+								msg += "cache (" + (cIdx + 1) + "/" + caching.length + "): " + cache + "\n ";
+								msg += "data  (" + (dIdx + 1) + "/" + datasets.length + "): " + data.name + "\n ";
+								msg += "feat  (" + (fIdx + 1) + "/" + features.size() + "): " + feat + "\n ";
+								msg += "clust (" + (fIdx + 1) + "/" + clusterers.length + "): " + clust.getName()
+										+ "\n ";
+								msg += "emb   (" + (eIdx + 1) + "/" + embedders.length + "): " + emb.getName();
+								System.err.println("XXXXXXXXXXXXXXXXXXXXXXXX\n" + msg + "\nXXXXXXXXXXXXXXXXXXXXXXXX");
+								eIdx++;
 							}
-							else
-							{
-								System.err.println("skipping cluster - embedding combination");
-							}
-							System.err.println("XXXXXXXXXXXX\ncache:" + cache + " " + (++count) + "/" + max + " "
-									+ "\nXXXXXXXXXXXX");
-							eIdx++;
+							cIdx++;
 						}
-						cIdx++;
+						fIdx++;
 					}
-					fIdx++;
+					dIdx++;
+					d.clear();
 				}
-				dIdx++;
-				d.clear();
+				cacheIdx++;
 			}
-			cacheIdx++;
+		}
+		finally
+		{
+			int count = 0;
+			int delCount = 0;
+			for (String f : tmpfiles)
+			{
+				try
+				{
+					if (new File(f).delete())
+						delCount++;
+					count++;
+				}
+				catch (Exception e)
+				{
+					e.printStackTrace();
+				}
+			}
+			System.err.println("deleted " + delCount + "/" + count + " tmp-files");
 		}
 	}
 
