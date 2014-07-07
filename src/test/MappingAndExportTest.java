@@ -160,7 +160,7 @@ public class MappingAndExportTest
 			datasets = new Dataset[] { D_SMI, D_INCHI, D_SDF, D_CSV };
 			clusterers = new DatasetClusterer[] { NoClusterer.INSTANCE,
 					ClusterWizardPanel.getDefaultClusterAlgorithm(), DynamicTreeCutHierarchicalRClusterer.INSTANCE };
-			embedders = new ThreeDEmbedder[] { Random3DEmbedder.INSTANCE, WekaPCA3DEmbedder.INSTANCE,
+			embedders = new ThreeDEmbedder[] { Random3DEmbedder.INSTANCE, WekaPCA3DEmbedder.INSTANCE_NO_PROBS,
 					Sammon3DEmbedder.INSTANCE };
 			featureTypes = PropertySetShortcut.values();
 			minFreq = new int[] { 0, 1, 2 };
