@@ -1,5 +1,6 @@
 package test;
 
+import gui.ClusterWizardPanel;
 import gui.LaunchCheSMapper;
 import io.SDFUtil;
 
@@ -34,7 +35,6 @@ import workflow.MappingWorkflow;
 import workflow.MappingWorkflow.DescriptorSelection;
 import alg.cluster.DatasetClusterer;
 import alg.cluster.NoClusterer;
-import alg.cluster.WekaClusterer;
 import alg.cluster.r.DynamicTreeCutHierarchicalRClusterer;
 import alg.embed3d.AbstractRTo3DEmbedder;
 import alg.embed3d.Random3DEmbedder;
@@ -145,7 +145,7 @@ public class MappingAndExportTest
 	static boolean caching[];
 	static
 	{//complete
-		if (TestLauncher.SHORT_TEST)
+		if (TestLauncher.MAPPING_TEST == TestLauncher.MappingTest.single)
 		{
 			datasets = new Dataset[] { D_SMI };
 			clusterers = new DatasetClusterer[] { NoClusterer.INSTANCE };
@@ -155,11 +155,11 @@ public class MappingAndExportTest
 			matchEngines = null;
 			caching = new boolean[] { false };
 		}
-		else
+		else if (TestLauncher.MAPPING_TEST == TestLauncher.MappingTest.all)
 		{
 			datasets = new Dataset[] { D_SMI, D_INCHI, D_SDF, D_CSV };
-			clusterers = new DatasetClusterer[] { NoClusterer.INSTANCE, WekaClusterer.WEKA_CLUSTERER[0],
-					DynamicTreeCutHierarchicalRClusterer.INSTANCE };
+			clusterers = new DatasetClusterer[] { NoClusterer.INSTANCE,
+					ClusterWizardPanel.getDefaultClusterAlgorithm(), DynamicTreeCutHierarchicalRClusterer.INSTANCE };
 			embedders = new ThreeDEmbedder[] { Random3DEmbedder.INSTANCE, WekaPCA3DEmbedder.INSTANCE,
 					Sammon3DEmbedder.INSTANCE };
 			featureTypes = PropertySetShortcut.values();
@@ -167,21 +167,23 @@ public class MappingAndExportTest
 			matchEngines = new MatchEngine[] { MatchEngine.OpenBabel, MatchEngine.CDK };
 			caching = new boolean[] { false, false, true };
 		}
+		else if (TestLauncher.MAPPING_TEST == TestLauncher.MappingTest.debug)
+		{
+			//datasets = new Dataset[] { D_SDF };
+			datasets = new Dataset[] { D_SMI, D_INCHI, D_SDF, D_CSV };
+			clusterers = new DatasetClusterer[] { ClusterWizardPanel.getDefaultClusterAlgorithm() };
+			embedders = new ThreeDEmbedder[] { Random3DEmbedder.INSTANCE };
+			featureTypes = new PropertySetShortcut[] { PropertySetShortcut.ob };
+			//		featureTypes = new PropertySetShortcut[] { PropertySetShortcut.cdkFunct, PropertySetShortcut.obFP2,
+			//				PropertySetShortcut.obFP3, PropertySetShortcut.obFP4, PropertySetShortcut.obMACCS,
+			//				PropertySetShortcut.benigniBossa };
+			minFreq = new int[] { 0, 1, 2 };
+			matchEngines = new MatchEngine[] { MatchEngine.OpenBabel, MatchEngine.CDK };
+			caching = new boolean[] { false, false, true };
+		}
+		else
+			throw new IllegalStateException();
 	}
-	//	static
-	//	{//debug
-	//		//datasets = new Dataset[] { D_SDF };
-	//		datasets = new Dataset[] { D_SMI, D_INCHI, D_SDF, D_CSV };
-	//		clusterers = new DatasetClusterer[] { NoClusterer.INSTANCE };
-	//		embedders = new ThreeDEmbedder[] { Random3DEmbedder.INSTANCE };
-	//		//featureTypes = new PropertySetShortcut[] { PropertySetShortcut.cdkFunct };
-	//		featureTypes = new PropertySetShortcut[] { PropertySetShortcut.cdkFunct, PropertySetShortcut.obFP2,
-	//				PropertySetShortcut.obFP3, PropertySetShortcut.obFP4, PropertySetShortcut.obMACCS,
-	//				PropertySetShortcut.benigniBossa };
-	//		minFreq = new int[] { 0, 1, 2 };
-	//		matchEngines = new MatchEngine[] { MatchEngine.OpenBabel, MatchEngine.CDK };
-	//		caching = new boolean[] { false };//, false, true };
-	//	}
 
 	static List<Feature> features = new ArrayList<Feature>();
 
@@ -558,10 +560,10 @@ public class MappingAndExportTest
 									System.err.println("skipping cluster - embedding combination");
 								}
 								String msg = (++count) + "/" + max + " done\n ";
-								msg += "cache (" + (cIdx + 1) + "/" + caching.length + "): " + cache + "\n ";
+								msg += "cache (" + (cacheIdx + 1) + "/" + caching.length + "): " + cache + "\n ";
 								msg += "data  (" + (dIdx + 1) + "/" + datasets.length + "): " + data.name + "\n ";
 								msg += "feat  (" + (fIdx + 1) + "/" + features.size() + "): " + feat + "\n ";
-								msg += "clust (" + (fIdx + 1) + "/" + clusterers.length + "): " + clust.getName()
+								msg += "clust (" + (cIdx + 1) + "/" + clusterers.length + "): " + clust.getName()
 										+ "\n ";
 								msg += "emb   (" + (eIdx + 1) + "/" + embedders.length + "): " + emb.getName();
 								System.err.println("XXXXXXXXXXXXXXXXXXXXXXXX\n" + msg + "\nXXXXXXXXXXXXXXXXXXXXXXXX");

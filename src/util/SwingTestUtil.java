@@ -1,5 +1,6 @@
 package util;
 
+import gui.BlockableFrame;
 import gui.Selector;
 import gui.swing.ComponentFactory.ClickableLabel;
 
@@ -34,11 +35,35 @@ import org.junit.Assert;
 
 public class SwingTestUtil
 {
+	public static void clickButton(final JButton b)
+	{
+		SwingUtil.invokeAndWait(new Runnable()
+		{
+			@Override
+			public void run()
+			{
+				b.doClick();
+			}
+		});
+	}
+
+	public static void setText(final JTextField tf, final String text)
+	{
+		SwingUtil.invokeAndWait(new Runnable()
+		{
+			@Override
+			public void run()
+			{
+				tf.setText(text);
+			}
+		});
+	}
+
 	public static JFrame getOnlyVisibleFrame()
 	{
 		JFrame f = null;
 		for (Window w : Window.getWindows())
-			if (w instanceof JFrame && w.isVisible())
+			if (w instanceof JFrame && w.isShowing())
 			{
 				if (f != null)
 					throw new IllegalStateException("num frames > 1");
@@ -53,7 +78,7 @@ public class SwingTestUtil
 		for (Window w : Window.getWindows())
 		{
 			//			System.out.println("found " + w + " " + w.getOwner());
-			if (w instanceof JDialog && w.isVisible() && ((JDialog) w).getOwner() == owner)
+			if (w instanceof JDialog && w.isShowing() && ((JDialog) w).getOwner() == owner)
 			{
 				if (d != null)
 					throw new IllegalStateException("num dialogs > 1");
@@ -66,7 +91,7 @@ public class SwingTestUtil
 	public static JDialog getVisibleDialog(Window owner, String title)
 	{
 		for (Window w : Window.getWindows())
-			if (w instanceof JDialog && w.isVisible() && ((JDialog) w).getOwner() == owner
+			if (w instanceof JDialog && w.isShowing() && ((JDialog) w).getOwner() == owner
 					&& ((JDialog) w).getTitle().equals(title))
 				return (JDialog) w;
 		return null;
@@ -86,8 +111,8 @@ public class SwingTestUtil
 				.matches("(?i).*" + contentMatch + ".*"));
 		JButton close = getButton(d, "Close");
 		Assert.assertNotNull(close);
-		close.doClick();
-		Assert.assertFalse(d.isVisible());
+		SwingTestUtil.clickButton(close);
+		Assert.assertFalse(d.isShowing());
 		SwingTestUtil.waitForGUI(250);
 	}
 
@@ -340,6 +365,24 @@ public class SwingTestUtil
 		//			}
 		//		});
 		System.exit(0);
+	}
+
+	public static void waitWhileBlocked(BlockableFrame viewer, String msg)
+	{
+		waitWhileBlocked(viewer, msg, true);
+	}
+
+	public static void waitWhileBlocked(BlockableFrame viewer, String msg, boolean checkBlock)
+	{
+		SwingTestUtil.waitForGUI(250);
+		//SwingUtil.waitForAWTEventThread();
+		if (checkBlock)
+			Assert.assertTrue(viewer.isBlocked());
+		while (viewer.isBlocked())
+		{
+			SwingTestUtil.waitForGUI(250);
+			System.out.println(msg);
+		}
 	}
 
 }

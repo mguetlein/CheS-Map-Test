@@ -27,6 +27,7 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 import property.PropertySetProvider;
+import util.ArrayUtil;
 import util.ListUtil;
 import util.ScreenUtil;
 import util.SwingTestUtil;
@@ -54,14 +55,21 @@ public class ViewerTest
 		{
 			LaunchCheSMapper.init();
 			LaunchCheSMapper.setExitOnClose(false);
-
 			Properties props = MappingWorkflow.createMappingWorkflow(DATA_DIR + dataset, new DescriptorSelection(
 					PropertySetProvider.PropertySetShortcut.integrated, "logD,rgyr,HCPSA,fROTB", null, null, null),
 					WekaClusterer.WEKA_CLUSTERER[0], WekaPCA3DEmbedder.INSTANCE);
-			CheSMapping mapping = MappingWorkflow.createMappingFromMappingWorkflow(props, "");
+			final CheSMapping mapping = MappingWorkflow.createMappingFromMappingWorkflow(props, "");
 			mapping.getDatasetFile();
 			mapping.doMapping();
-			LaunchCheSMapper.start(mapping);
+			System.out.println("start");
+			Thread th = new Thread(new Runnable()
+			{
+				public void run()
+				{
+					LaunchCheSMapper.start(mapping);
+				}
+			});
+			th.start();
 
 			//			Thread th = new Thread(new Runnable()
 			//			{
@@ -122,8 +130,17 @@ public class ViewerTest
 	private static void loadingDialog()
 	{
 		Window w[] = Window.getWindows();
-		Assert.assertEquals(2, w.length);
-		JDialog d = (JDialog) w[0];
+		JDialog d = null;
+		for (Window window : w)
+			if (window instanceof JDialog && window.isShowing())
+			{
+				Assert.assertNull(d);
+				d = (JDialog) window;
+				break;
+			}
+			else
+				System.out.println(window);
+		Assert.assertNotNull(d);
 		while (d.isVisible())
 		{
 			Assert.assertTrue(d.getTitle().matches(".*[0-9]++%.*"));
@@ -163,24 +180,6 @@ public class ViewerTest
 		}
 	}
 
-	private static void waitWhileBlocked(String msg)
-	{
-		waitWhileBlocked(msg, true);
-	}
-
-	private static void waitWhileBlocked(String msg, boolean checkBlock)
-	{
-		SwingTestUtil.waitForGUI(250);
-		//SwingUtil.waitForAWTEventThread();
-		if (checkBlock)
-			Assert.assertTrue(viewer.isBlocked());
-		while (viewer.isBlocked())
-		{
-			SwingTestUtil.waitForGUI(250);
-			System.out.println(msg);
-		}
-	}
-
 	@SuppressWarnings("rawtypes")
 	@Test
 	public void test1ClusterAndCompoundList()
@@ -194,53 +193,66 @@ public class ViewerTest
 
 		Assert.assertFalse(compoundList.isShowing());
 		SwingTestUtil.clickList(clusterList, 0);
-		waitWhileBlocked("waiting to switch to single compound selection", false);
+		SwingTestUtil.waitWhileBlocked(viewer, "waiting to switch to single compound selection", false);
 		Assert.assertTrue(compoundList.isShowing());
 		Assert.assertEquals(compoundList.getModel().getSize(), numCompounds);
 		int randomCompound = random.nextInt(Math.min(10, numCompounds));
 		SwingTestUtil.clickList(compoundList, randomCompound);
-		waitWhileBlocked("waiting to zoom into compound");
+		SwingTestUtil.waitWhileBlocked(viewer, "waiting to zoom into compound");
 
 		int numCompoundsInCluster = compoundList.getModel().getSize();
 		ClickableLabel lab = SwingTestUtil.getVisibleClickableLabel(viewer, SwingConstants.TOP);
 		SwingTestUtil.clickXButton(lab);
-		waitWhileBlocked("waiting to zoom out of compound to cluster");
+		SwingTestUtil.waitWhileBlocked(viewer, "waiting to zoom out of compound to cluster");
 		if (compoundList.isShowing())
 		{
 			Assert.assertTrue(numCompoundsInCluster > 1);
 			SwingTestUtil.clickXButton(lab);
-			waitWhileBlocked("waiting to zoom out of cluster");
+			SwingTestUtil.waitWhileBlocked(viewer, "waiting to zoom out of cluster");
 		}
 		else
 			Assert.assertTrue(numCompoundsInCluster == 1);
 		Assert.assertFalse(compoundList.isShowing());
 		Assert.assertFalse(lab.isShowing());
 
-		for (int i = 0; i < numClusters; i++)
+		int idx[] = ArrayUtil.indexArray(numClusters);
+		ArrayUtil.scramble(idx);
+		boolean singleCompoundCluster = false;
+		boolean multiCompoundCluster = false;
+
+		for (int j = 0; j < numClusters; j++)
 		{
+			int i = idx[j];
 			Assert.assertFalse(compoundList.isShowing());
 			Assert.assertFalse(viewer.isBlocked());
 			SwingTestUtil.clickList(clusterList, i + 1);
-			waitWhileBlocked("waiting to zoom into cluster");
+			SwingTestUtil.waitWhileBlocked(viewer, "waiting to zoom into cluster");
 			Assert.assertTrue(compoundList.isShowing());
 			Assert.assertEquals(compoundList.getModel().getSize(), numCompoundsInClusters[i]);
 			randomCompound = random.nextInt(Math.min(10, numCompoundsInClusters[i]));
 			SwingTestUtil.clickList(compoundList, randomCompound);
-			waitWhileBlocked("waiting to zoom into compound");
+			SwingTestUtil.waitWhileBlocked(viewer, "waiting to zoom into compound");
 
 			lab = SwingTestUtil.getVisibleClickableLabel(viewer, SwingConstants.TOP);
 			SwingTestUtil.clickXButton(lab);
-			waitWhileBlocked("waiting to zoom out of compound to cluster");
+			SwingTestUtil.waitWhileBlocked(viewer, "waiting to zoom out of compound to cluster");
 			if (compoundList.isShowing())
 			{
+				multiCompoundCluster = true;
 				Assert.assertTrue(numCompoundsInClusters[i] > 1);
 				SwingTestUtil.clickXButton(lab);
-				waitWhileBlocked("waiting to zoom out of cluster");
+				SwingTestUtil.waitWhileBlocked(viewer, "waiting to zoom out of cluster");
 			}
 			else
+			{
+				singleCompoundCluster = true;
 				Assert.assertTrue(numCompoundsInClusters[i] == 1);
+			}
 			Assert.assertFalse(compoundList.isShowing());
 			Assert.assertFalse(lab.isShowing());
+
+			if (multiCompoundCluster && singleCompoundCluster)
+				break;
 		}
 	}
 

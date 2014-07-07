@@ -10,7 +10,10 @@ import gui.FeatureWizardPanel;
 import gui.LaunchCheSMapper;
 import gui.Selector;
 
+import java.io.File;
+
 import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JList;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
@@ -47,6 +50,8 @@ public class WizardTest
 	{
 		if (wizard == null)
 		{
+			//LaunchCheSMapper.init(Locale.US, ScreenSetup.DEFAULT, false, true);
+			//LaunchCheSMapper.setExitOnClose(false);
 			Thread th = new Thread(new Runnable()
 			{
 				public void run()
@@ -56,10 +61,12 @@ public class WizardTest
 			});
 			th.start();
 			while (SwingTestUtil.getOnlyVisibleFrame() == null)
-				ThreadUtil.sleep(50);
-			SwingTestUtil.waitForGUI(250);
-			Assert.assertNotNull(Settings.TOP_LEVEL_FRAME);
-			Assert.assertTrue(Settings.TOP_LEVEL_FRAME.isVisible());
+			{
+				System.out.println("wait for wizard");
+				ThreadUtil.sleep(500);
+			}
+			ThreadUtil.sleep(1000);
+			System.out.println("start wizard test");
 			wizard = (CheSMapperWizard) Settings.TOP_LEVEL_FRAME;
 			nextButton = SwingTestUtil.getButton(wizard, "Next");
 			prevButton = SwingTestUtil.getButton(wizard, "Previous");
@@ -71,6 +78,21 @@ public class WizardTest
 		}
 	}
 
+	private void waitForLoadingDialogToClose()
+	{
+		JDialog d = null;
+		do
+		{
+			d = SwingTestUtil.getOnlyVisibleDialog(wizard);
+			if (d != null)
+				Assert.assertEquals(d.getTitle(), "Loading dataset file");
+			System.out.println("wait for waiting dialog to close");
+			SwingTestUtil.waitForGUI(250);
+		}
+		while (d != null);
+		SwingTestUtil.waitForGUI(250);
+	}
+
 	@Test
 	public void test1DatasetPanel()
 	{
@@ -80,33 +102,69 @@ public class WizardTest
 		JButton buttonLoad = SwingTestUtil.getButton(panel, "Load Dataset");
 		Assert.assertFalse(buttonLoad.isEnabled());
 
-		textField.setText("jklsfdjklajklsfdauioes");
+		SwingTestUtil.setText(textField, "jklsfdjklajklsfdauioes");
 		Assert.assertFalse(wizard.isBlocked());
 		Assert.assertTrue(buttonLoad.isEnabled());
 		Assert.assertFalse(nextButton.isEnabled());
-		buttonLoad.doClick();
+		SwingTestUtil.clickButton(buttonLoad);
 		Assert.assertTrue(wizard.isBlocked());
+		waitForLoadingDialogToClose();
 		SwingTestUtil.assertErrorDialog(wizard, "ERROR - Loading dataset file", "not found");
-		Assert.assertFalse(wizard.isBlocked());
+		SwingTestUtil.waitWhileBlocked(wizard, "loading non existing file", false);
 
-		textField.setText(DATA_DIR + "broken_smiles.csv");
+		SwingTestUtil.setText(textField, DATA_DIR + "broken_smiles.csv");
 		Assert.assertFalse(wizard.isBlocked());
 		Assert.assertTrue(buttonLoad.isEnabled());
 		Assert.assertFalse(nextButton.isEnabled());
-		buttonLoad.doClick();
+		SwingTestUtil.clickButton(buttonLoad);
 		Assert.assertTrue(wizard.isBlocked());
-		while (SwingTestUtil.getOnlyVisibleDialog(wizard) == null
-				|| SwingTestUtil.getOnlyVisibleDialog(wizard).getTitle().equals("Loading dataset file"))
-			ThreadUtil.sleep(50);
+		waitForLoadingDialogToClose();
 		SwingTestUtil.assertErrorDialog(wizard, "ERROR - Loading dataset file", "illegal smiles");
-		Assert.assertFalse(wizard.isBlocked());
+		SwingTestUtil.waitWhileBlocked(wizard, "loading errornous file", false);
 
-		textField.setText(DATA_DIR + "basicTestSet.sdf");
+		SwingTestUtil.setText(textField, DATA_DIR + "sdf_with_broken_compound.sdf");
+		if (new File(DATA_DIR + "sdf_with_broken_compound_cleaned.sdf").exists())
+			new File(DATA_DIR + "sdf_with_broken_compound_cleaned.sdf").delete();
+		Assert.assertFalse(new File(DATA_DIR + "sdf_with_broken_compound_cleaned.sdf").exists());
 		Assert.assertFalse(wizard.isBlocked());
-		buttonLoad.doClick();
+		Assert.assertTrue(buttonLoad.isEnabled());
+		Assert.assertFalse(nextButton.isEnabled());
+		SwingTestUtil.clickButton(buttonLoad);
 		Assert.assertTrue(wizard.isBlocked());
-		while (wizard.isBlocked())
-			ThreadUtil.sleep(50);
+		waitForLoadingDialogToClose();
+		Assert.assertTrue(wizard.isBlocked());
+		SwingTestUtil.waitForGUI(1000);
+		Assert.assertTrue(wizard.isBlocked());
+		JDialog d = SwingTestUtil.getOnlyVisibleDialog(wizard);
+		Assert.assertNotNull(d);
+		Assert.assertTrue(d.getTitle().contains("faulty"));
+		JButton b = SwingTestUtil.getButton(d, "Yes");
+		JButton b2 = SwingTestUtil.getButton(d, "No");
+		Assert.assertNotNull(b);
+		Assert.assertNotNull(b2);
+		SwingTestUtil.clickButton(b);
+		Assert.assertTrue(wizard.isBlocked());
+		SwingTestUtil.waitForGUI(1000);
+		Assert.assertTrue(wizard.isBlocked());
+		JDialog d2 = SwingTestUtil.getOnlyVisibleDialog(wizard);
+		Assert.assertNotNull(d2);
+		Assert.assertTrue(d2.getTitle().contains("Save"));
+		JButton b3 = SwingTestUtil.getButton(d2, "Save");
+		Assert.assertNotNull(b3);
+		SwingTestUtil.clickButton(b3);
+		waitForLoadingDialogToClose();
+		Assert.assertFalse(buttonLoad.isEnabled());
+		Assert.assertTrue(nextButton.isEnabled());
+		Assert.assertTrue(new File(DATA_DIR + "sdf_with_broken_compound_cleaned.sdf").exists());
+
+		Assert.assertFalse(wizard.isBlocked());
+		SwingTestUtil.setText(textField, DATA_DIR + "basicTestSet.sdf");
+		Assert.assertFalse(wizard.isBlocked());
+		Assert.assertTrue(buttonLoad.isEnabled());
+		SwingTestUtil.clickButton(buttonLoad);
+		Assert.assertTrue(wizard.isBlocked());
+		waitForLoadingDialogToClose();
+		Assert.assertFalse(wizard.isBlocked());
 		Assert.assertFalse(buttonLoad.isEnabled());
 		Assert.assertTrue(nextButton.isEnabled());
 

@@ -4,3 +4,4 @@ bin
 ches-mapper-unit-test.jar
 VERSION
 .settings
+data/sdf_with_broken_compound_cleaned.sdf
