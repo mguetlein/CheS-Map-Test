@@ -183,13 +183,11 @@ public class MappingAndExportTest
 		}
 		else if (TestLauncher.MAPPING_TEST == TestLauncher.MappingTest.debug)
 		{
-			datasets = new Dataset[] { D_SDF };
+			datasets = new Dataset[] { D_INCHI };
 			//datasets = new Dataset[] { D_SMI, D_INCHI, D_SDF, D_CSV };
-			clusterers = new DatasetClusterer[] { NoClusterer.INSTANCE, new ClustererProvider().getYesAlgorithm(),
-					DynamicTreeCutHierarchicalRClusterer.INSTANCE };
-			embedders = new ThreeDEmbedder[] { Random3DEmbedder.INSTANCE, WekaPCA3DEmbedder.INSTANCE_NO_PROBS,
-					Sammon3DEmbedder.INSTANCE };
-			featureTypes = new PropertySetShortcut[] { PropertySetShortcut.ob };
+			clusterers = new DatasetClusterer[] { new ClustererProvider().getYesAlgorithm() };
+			embedders = new ThreeDEmbedder[] { Random3DEmbedder.INSTANCE };
+			featureTypes = new PropertySetShortcut[] { PropertySetShortcut.integrated };
 			//		featureTypes = new PropertySetShortcut[] { PropertySetShortcut.cdkFunct, PropertySetShortcut.obFP2,
 			//				PropertySetShortcut.obFP3, PropertySetShortcut.obFP4, PropertySetShortcut.obMACCS,
 			//				PropertySetShortcut.benigniBossa };
@@ -482,11 +480,11 @@ public class MappingAndExportTest
 									else
 									{
 										// use direct way without props, both should yield equal results
-										// (cannot compare mapping directly because algorithms are singletons)
+										// (doing this instead of comparing mapping directly because algorithms are singletons)
 										dataset = new DatasetLoader(false).load("data/" + data.name);
-										mapping = new CheSMapping(dataset,
-												ListUtil.toArray(feats.getFeatures(dataset)), clust,
-												UseOrigStructures.INSTANCE, emb, NoAligner.INSTANCE);
+										mapping = new CheSMapping(dataset, ListUtil.toArray(CompoundPropertySet.class,
+												feats.getFeatures(dataset)), clust, UseOrigStructures.INSTANCE, emb,
+												NoAligner.INSTANCE);
 									}
 									System.err.println(dataset + " " + dataset.hashCode());
 
