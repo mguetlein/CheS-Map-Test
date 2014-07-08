@@ -631,6 +631,7 @@ public class MappingAndExportTest
 				}
 				cacheIdx++;
 			}
+			System.err.println("\n" + count + "/" + max + " tests done");
 		}
 		finally
 		{
