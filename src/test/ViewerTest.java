@@ -223,6 +223,13 @@ public class ViewerTest
 		for (int j = 0; j < numClusters; j++)
 		{
 			int i = idx[j];
+			if (multiCompoundCluster && singleCompoundCluster)
+				break;
+			if (numCompoundsInClusters[i] == 1 && singleCompoundCluster)
+				continue;
+			if (numCompoundsInClusters[i] > 1 && multiCompoundCluster)
+				continue;
+
 			Assert.assertFalse(compoundList.isShowing());
 			Assert.assertFalse(viewer.isBlocked());
 			SwingTestUtil.clickList(clusterList, i + 1);
@@ -250,9 +257,6 @@ public class ViewerTest
 			}
 			Assert.assertFalse(compoundList.isShowing());
 			Assert.assertFalse(lab.isShowing());
-
-			if (multiCompoundCluster && singleCompoundCluster)
-				break;
 		}
 	}
 

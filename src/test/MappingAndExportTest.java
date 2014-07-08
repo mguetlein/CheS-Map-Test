@@ -1,7 +1,7 @@
 package test;
 
-import gui.ClusterWizardPanel;
 import gui.LaunchCheSMapper;
+import gui.property.Property;
 import io.SDFUtil;
 
 import java.io.File;
@@ -31,8 +31,13 @@ import util.FileUtil;
 import util.FileUtil.CSVFile;
 import util.ListUtil;
 import util.ObjectUtil;
+import workflow.ClustererProvider;
+import workflow.DatasetLoader;
 import workflow.MappingWorkflow;
 import workflow.MappingWorkflow.DescriptorSelection;
+import alg.Algorithm;
+import alg.align3d.NoAligner;
+import alg.build3d.UseOrigStructures;
 import alg.cluster.DatasetClusterer;
 import alg.cluster.NoClusterer;
 import alg.cluster.r.DynamicTreeCutHierarchicalRClusterer;
@@ -143,6 +148,15 @@ public class MappingAndExportTest
 	final static int minFreq[];
 	final static MatchEngine matchEngines[];
 	static boolean caching[];
+	final static DoubleKeyHashMap<Algorithm, String, Object> algorithmProps = new DoubleKeyHashMap<Algorithm, String, Object>();
+	{
+		algorithmProps.put(new ClustererProvider().getYesAlgorithm(), "minNumClusters", 3);
+		algorithmProps.put(DynamicTreeCutHierarchicalRClusterer.INSTANCE,
+				"Minimum number of compounds in each cluster (minClusterSize)", 2);
+		algorithmProps.put(Random3DEmbedder.INSTANCE, "Random seed", 2);
+		algorithmProps.put(Sammon3DEmbedder.INSTANCE, "Maximum number of iterations (niter)", 10);
+	}
+
 	static
 	{//complete
 		if (TestLauncher.MAPPING_TEST == TestLauncher.MappingTest.single)
@@ -158,8 +172,8 @@ public class MappingAndExportTest
 		else if (TestLauncher.MAPPING_TEST == TestLauncher.MappingTest.all)
 		{
 			datasets = new Dataset[] { D_SMI, D_INCHI, D_SDF, D_CSV };
-			clusterers = new DatasetClusterer[] { NoClusterer.INSTANCE,
-					ClusterWizardPanel.getDefaultClusterAlgorithm(), DynamicTreeCutHierarchicalRClusterer.INSTANCE };
+			clusterers = new DatasetClusterer[] { NoClusterer.INSTANCE, new ClustererProvider().getYesAlgorithm(),
+					DynamicTreeCutHierarchicalRClusterer.INSTANCE };
 			embedders = new ThreeDEmbedder[] { Random3DEmbedder.INSTANCE, WekaPCA3DEmbedder.INSTANCE_NO_PROBS,
 					Sammon3DEmbedder.INSTANCE };
 			featureTypes = PropertySetShortcut.values();
@@ -169,10 +183,12 @@ public class MappingAndExportTest
 		}
 		else if (TestLauncher.MAPPING_TEST == TestLauncher.MappingTest.debug)
 		{
-			//datasets = new Dataset[] { D_SDF };
-			datasets = new Dataset[] { D_SMI, D_INCHI, D_SDF, D_CSV };
-			clusterers = new DatasetClusterer[] { ClusterWizardPanel.getDefaultClusterAlgorithm() };
-			embedders = new ThreeDEmbedder[] { Random3DEmbedder.INSTANCE };
+			datasets = new Dataset[] { D_SDF };
+			//datasets = new Dataset[] { D_SMI, D_INCHI, D_SDF, D_CSV };
+			clusterers = new DatasetClusterer[] { NoClusterer.INSTANCE, new ClustererProvider().getYesAlgorithm(),
+					DynamicTreeCutHierarchicalRClusterer.INSTANCE };
+			embedders = new ThreeDEmbedder[] { Random3DEmbedder.INSTANCE, WekaPCA3DEmbedder.INSTANCE_NO_PROBS,
+					Sammon3DEmbedder.INSTANCE };
 			featureTypes = new PropertySetShortcut[] { PropertySetShortcut.ob };
 			//		featureTypes = new PropertySetShortcut[] { PropertySetShortcut.cdkFunct, PropertySetShortcut.obFP2,
 			//				PropertySetShortcut.obFP3, PropertySetShortcut.obFP4, PropertySetShortcut.obMACCS,
@@ -379,6 +395,7 @@ public class MappingAndExportTest
 			ArrayUtil.scramble(clusterers, r);
 			ArrayUtil.scramble(embedders, r);
 
+			HashMap<String, String> featureNames = new HashMap<String, String>();
 			HashMap<String, String> positions = new HashMap<String, String>();
 			HashMap<String, String> outfiles = new HashMap<String, String>();
 
@@ -394,7 +411,7 @@ public class MappingAndExportTest
 				int dIdx = 0;
 				for (Dataset data : datasets)
 				{
-					DatasetFile d = null;
+					DatasetFile dataset = null;
 					DoubleKeyHashMap<String, Feature, Integer> numFeatures = new DoubleKeyHashMap<String, Feature, Integer>();
 
 					int fIdx = 0;
@@ -410,6 +427,8 @@ public class MappingAndExportTest
 										|| (clust == NoClusterer.INSTANCE && emb != Random3DEmbedder.INSTANCE)
 										|| (clust != NoClusterer.INSTANCE && emb == Random3DEmbedder.INSTANCE))
 								{
+									Assert.assertNull(Settings.TOP_LEVEL_FRAME);
+
 									//					LaunchCheSMapper.main(new String[] { "-e", "--rem-missing-above-ratio", "1",
 									//							"--keep-uniform-values", "-d", "data/" + data.name, "-f", feat.shortName, "-o", res });
 
@@ -422,23 +441,50 @@ public class MappingAndExportTest
 										else
 											feats.setFingerprintSettings(feat.minFreq, true, feat.matchEngine);
 									}
-									if (clust instanceof DynamicTreeCutHierarchicalRClusterer)
-										((DynamicTreeCutHierarchicalRClusterer) clust).setMinClusterSize(2);
+									if (algorithmProps != null)
+										for (Algorithm alg : algorithmProps.keySet1())
+											for (Algorithm alg2 : new Algorithm[] { clust, emb })
+												if (alg == alg2)
+												{
+													for (Property p : alg.getProperties())
+													{
+														if (algorithmProps.containsKeyPair(alg, p.getName()))
+														{
+															p.setValue(algorithmProps.get(alg, p.getName()));
+															System.err.println("setting " + p.getName() + " of "
+																	+ alg.getName() + " to " + p.getValue());
+															break;
+														}
+													}
+													break;
+												}
 
-									Properties props = MappingWorkflow.createMappingWorkflow("data/" + data.name,
-											feats, clust, emb);
-
-									CheSMapping mapping = MappingWorkflow.createMappingFromMappingWorkflow(props, "");
-									d = mapping.getDatasetFile();
-
-									System.err.println(d + " " + d.hashCode());
+									CheSMapping mapping;
+									if (cacheIdx == 1)
+									{
+										// use the standard export/workflow way that stores to global props to have this settings available in the wizard
+										Properties props = MappingWorkflow.createMappingWorkflow("data/" + data.name,
+												feats, clust, emb);
+										mapping = MappingWorkflow.createMappingFromMappingWorkflow(props, "");
+										dataset = mapping.getDatasetFile();
+									}
+									else
+									{
+										// use direct way without props, both should yield equal results
+										// (cannot compare mapping directly because algorithms are singletons)
+										dataset = new DatasetLoader(false).load("data/" + data.name);
+										mapping = new CheSMapping(dataset,
+												ListUtil.toArray(feats.getFeatures(dataset)), clust,
+												UseOrigStructures.INSTANCE, emb, NoAligner.INSTANCE);
+									}
+									System.err.println(dataset + " " + dataset.hashCode());
 
 									ClusteringData clusteringData = mapping.doMapping();
 									ClusteringImpl clustering = new ClusteringImpl();
 									clustering.newClustering(clusteringData);
 
 									// check features
-									Assert.assertEquals(feats.getFeatures(d).size(), mapping.getNumFeatureSets());
+									Assert.assertEquals(feats.getFeatures(dataset).size(), mapping.getNumFeatureSets());
 									System.err.println(data.name + " " + feat.shortName + " " + feat.minFreq + " "
 											+ feat.matchEngine + " num-features:" + clustering.getFeatures().size());
 									if (feat.numFragments.containsKey(data))
@@ -505,7 +551,8 @@ public class MappingAndExportTest
 													.contains("Too few unique data points")))
 										Assert.assertEquals(Random3DEmbedder.INSTANCE, usedEmb);
 									else
-										Assert.assertEquals(emb, usedEmb);
+										Assert.assertEquals("Embedding should have been performed with " + emb
+												+ ", instead used: " + usedClust, emb, usedEmb);
 									if (usedEmb == Random3DEmbedder.INSTANCE)
 									{
 										Assert.assertNull(clusteringData.getEmbeddingQualityProperty());
@@ -516,10 +563,15 @@ public class MappingAndExportTest
 									}
 									String idxStr = dIdx + "." + fIdx + "." + cIdx + "." + eIdx + ".";
 									if (!positions.containsKey(idxStr))
+									{
+										featureNames.put(idxStr, ListUtil.toString(clustering.getFeatures()));
 										positions.put(idxStr, ListUtil.toString(usedEmb.getPositions()));
+									}
 									else
 									{
-										System.err.println("checking that positions are equal " + idxStr);
+										System.err.println("checking that features and positions are equal " + idxStr);
+										Assert.assertEquals(featureNames.get(idxStr),
+												ListUtil.toString(clustering.getFeatures()));
 										Assert.assertEquals(positions.get(idxStr),
 												ListUtil.toString(usedEmb.getPositions()));
 									}
@@ -574,7 +626,7 @@ public class MappingAndExportTest
 						fIdx++;
 					}
 					dIdx++;
-					d.clear();
+					dataset.clear();
 				}
 				cacheIdx++;
 			}
