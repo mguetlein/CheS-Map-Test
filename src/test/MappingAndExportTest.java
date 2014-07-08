@@ -423,6 +423,17 @@ public class MappingAndExportTest
 							int eIdx = 0;
 							for (ThreeDEmbedder emb : embedders)
 							{
+								count++;
+								String msg = count + "/" + max + ":\n ";
+								msg += "cache (" + (cacheIdx + 1) + "/" + caching.length + "): " + cache + "\n ";
+								msg += "data  (" + (dIdx + 1) + "/" + datasets.length + "): " + data.name + "\n ";
+								msg += "feat  (" + (fIdx + 1) + "/" + features.size() + "): " + feat + "\n ";
+								msg += "clust (" + (cIdx + 1) + "/" + clusterers.length + "): " + clust.getName()
+										+ "\n ";
+								msg += "emb   (" + (eIdx + 1) + "/" + embedders.length + "): " + emb.getName();
+								System.err.println("\n================================================\n" + msg
+										+ "\n------------------------------------------------");
+
 								if ((clusterers.length == 1 && embedders.length == 1)
 										|| (clust == NoClusterer.INSTANCE && emb != Random3DEmbedder.INSTANCE)
 										|| (clust != NoClusterer.INSTANCE && emb == Random3DEmbedder.INSTANCE))
@@ -611,14 +622,6 @@ public class MappingAndExportTest
 								{
 									System.err.println("skipping cluster - embedding combination");
 								}
-								String msg = (++count) + "/" + max + " done\n ";
-								msg += "cache (" + (cacheIdx + 1) + "/" + caching.length + "): " + cache + "\n ";
-								msg += "data  (" + (dIdx + 1) + "/" + datasets.length + "): " + data.name + "\n ";
-								msg += "feat  (" + (fIdx + 1) + "/" + features.size() + "): " + feat + "\n ";
-								msg += "clust (" + (cIdx + 1) + "/" + clusterers.length + "): " + clust.getName()
-										+ "\n ";
-								msg += "emb   (" + (eIdx + 1) + "/" + embedders.length + "): " + emb.getName();
-								System.err.println("XXXXXXXXXXXXXXXXXXXXXXXX\n" + msg + "\nXXXXXXXXXXXXXXXXXXXXXXXX");
 								eIdx++;
 							}
 							cIdx++;
