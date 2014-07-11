@@ -5,39 +5,42 @@ import org.junit.runner.JUnitCore;
 import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
 
+import util.ArrayUtil;
 import util.TimeFormatUtil;
 
 public class TestLauncher
 {
 	public static enum MappingTest
 	{
-		all, single, debug
+		single, wizard, cache, all, debug
 	}
 
-	public static MappingTest MAPPING_TEST = MappingTest.debug;
+	public static MappingTest MAPPING_TEST;// = MappingTest.all_gui;
 
 	public static void main(String[] args)
 	{
-		String cmd = "";
-		if (args != null && args.length >= 1)
-			cmd = args[0];
+		if (args == null || args.length != 2)
+		{
+			System.err
+					.println("first param: gui|mapping, second param for gui: wizard|viewer|both, second param for mapping: "
+							+ ArrayUtil.toString(MappingTest.values(), "|", "", "", ""));
+			System.exit(1);
+		}
 		JUnitCore junit = new JUnitCore();
 		junit.addListener(new TextListener(System.out));
-		Result result;
-		if (cmd.equals("gui"))
-			result = junit.run(WizardTest.class, ViewerTest.class);
-		else if (cmd.equals("wizard"))
-			result = junit.run(WizardTest.class);
-		else if (cmd.equals("viewer"))
-			result = junit.run(ViewerTest.class);
-		else
+		Result result = null;
+		if (args[0].equals("gui"))
 		{
-			if (cmd.equals("short") || cmd.equals("single"))
-				MAPPING_TEST = MappingTest.single;
-			else if (cmd.equals("debug"))
-				MAPPING_TEST = MappingTest.debug;
-			else
-				MAPPING_TEST = MappingTest.all;
+			if (args[1].equals("both"))
+				result = junit.run(WizardTest.class, ViewerTest.class);
+			else if (args[1].equals("wizard"))
+				result = junit.run(WizardTest.class);
+			else if (args[1].equals("viewer"))
+				result = junit.run(ViewerTest.class);
+		}
+		else if (args[0].equals("mapping"))
+		{
+			MAPPING_TEST = MappingTest.valueOf(args[1]);
 			result = junit.run(MappingAndExportTest.class);
 		}
 		System.out.println("");

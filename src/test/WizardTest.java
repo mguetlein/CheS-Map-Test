@@ -80,6 +80,11 @@ public class WizardTest
 
 	private void waitForLoadingDialogToClose()
 	{
+		waitForLoadingDialogToClose(wizard);
+	}
+
+	public static void waitForLoadingDialogToClose(CheSMapperWizard wizard)
+	{
 		JDialog d = null;
 		do
 		{
@@ -87,10 +92,10 @@ public class WizardTest
 			if (d != null)
 				Assert.assertEquals(d.getTitle(), "Loading dataset file");
 			System.out.println("wait for waiting dialog to close");
-			SwingTestUtil.waitForGUI(250);
+			SwingTestUtil.waitForGUI(50);
 		}
 		while (d != null);
-		SwingTestUtil.waitForGUI(250);
+		SwingTestUtil.waitForGUI(50);
 	}
 
 	@Test

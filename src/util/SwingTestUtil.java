@@ -16,6 +16,7 @@ import java.util.List;
 import javax.swing.AbstractButton;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -27,6 +28,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
+import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.text.JTextComponent;
@@ -35,7 +37,7 @@ import org.junit.Assert;
 
 public class SwingTestUtil
 {
-	public static void clickButton(final JButton b)
+	public static void clickButton(final AbstractButton b)
 	{
 		SwingUtil.invokeAndWait(new Runnable()
 		{
@@ -253,6 +255,21 @@ public class SwingTestUtil
 		return (Selector<?, ?>) getOnlyComponent(owner, Selector.class);
 	}
 
+	public static JSpinner getOnlySpinner(Container owner)
+	{
+		return (JSpinner) getOnlyComponent(owner, JSpinner.class);
+	}
+
+	public static JCheckBox getOnlyCheckBox(Container owner)
+	{
+		return (JCheckBox) getOnlyComponent(owner, JCheckBox.class);
+	}
+
+	public static JComboBox<?> getOnlyComboBox(Container owner)
+	{
+		return (JComboBox<?>) getOnlyComponent(owner, JComboBox.class);
+	}
+
 	public static ClickableLabel getVisibleClickableLabel(Container owner, int swingConstantOrientation)
 	{
 		ClickableLabel l = null;
@@ -316,7 +333,7 @@ public class SwingTestUtil
 		}
 	}
 
-	public static void clickXButton(ClickableLabel lab)
+	public static void clickXButton(JComponent lab)
 	{
 		try
 		{
@@ -374,13 +391,13 @@ public class SwingTestUtil
 
 	public static void waitWhileBlocked(BlockableFrame viewer, String msg, boolean checkBlock)
 	{
-		SwingTestUtil.waitForGUI(250);
+		SwingTestUtil.waitForGUI(50);
 		//SwingUtil.waitForAWTEventThread();
 		if (checkBlock)
 			Assert.assertTrue(viewer.isBlocked());
 		while (viewer.isBlocked())
 		{
-			SwingTestUtil.waitForGUI(250);
+			SwingTestUtil.waitForGUI(50);
 			System.out.println(msg);
 		}
 	}

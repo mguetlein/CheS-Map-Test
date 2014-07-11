@@ -1,7 +1,7 @@
 package test;
 
 
-public class MappingTest
+public class OldMappingTest
 {
 	//	public static String DATA_DIR = "data/";
 	//	static Random random;
