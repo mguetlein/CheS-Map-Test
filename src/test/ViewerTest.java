@@ -8,10 +8,14 @@ import java.awt.Point;
 import java.awt.Robot;
 import java.awt.Window;
 import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.Random;
 
+import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JList;
 import javax.swing.JMenuItem;
@@ -55,6 +59,7 @@ public class ViewerTest
 		{
 			LaunchCheSMapper.init();
 			LaunchCheSMapper.setExitOnClose(false);
+			Settings.TOP_LEVEL_FRAME_SCREEN = 0;
 			Properties props = MappingWorkflow.createMappingWorkflow(DATA_DIR + dataset, new DescriptorSelection(
 					PropertySetProvider.PropertySetShortcut.integrated, "logD,rgyr,HCPSA,fROTB", null, null, null),
 					null, WekaClusterer.WEKA_CLUSTERER[0], WekaPCA3DEmbedder.INSTANCE);
@@ -260,6 +265,73 @@ public class ViewerTest
 		}
 	}
 
+	@SuppressWarnings("rawtypes")
+	@Test
+	public void test2filterAndDistance()
+	{
+		List<JList> lists = ListUtil.cast(JList.class, SwingTestUtil.getComponents(viewer, JList.class));
+		Assert.assertEquals(lists.size(), 2);
+		JList clusterList = lists.get(0);
+		JList compoundList = lists.get(1);
+		Assert.assertFalse(compoundList.isShowing());
+		SwingTestUtil.clickList(clusterList, 0);
+		SwingTestUtil.waitWhileBlocked(viewer, "waiting to switch to single compound selection", false);
+		Assert.assertTrue(compoundList.isShowing());
+
+		int randomCompound = random.nextInt(Math.min(10, numCompounds));
+		SwingTestUtil.clickList(compoundList, randomCompound, true);
+		JButton filterButton = SwingTestUtil.getButtonWithName(viewer, "filter-button");
+		Assert.assertFalse(filterButton.isVisible());
+		List<Integer> selected = new ArrayList<Integer>();
+		selected.add(randomCompound);
+		int numFiltered = 2 + random.nextInt(5);
+		while (selected.size() < numFiltered)
+		{
+			SwingTestUtil.waitForGUI(100);
+			randomCompound = random.nextInt(Math.min(10, numCompounds));
+			if (selected.contains(randomCompound))
+				continue;
+			SwingTestUtil.clickList(compoundList, randomCompound, true);
+			selected.add(randomCompound);
+		}
+		SwingTestUtil.waitForGUI(100);
+		filterButton = SwingTestUtil.getButtonWithName(viewer, "filter-button");
+		Assert.assertTrue(filterButton.isVisible());
+		SwingTestUtil.clickButton(filterButton);
+		SwingTestUtil.waitWhileBlocked(viewer, "wait for filter", true);
+
+		Assert.assertEquals(compoundList.getModel().getSize(), numFiltered);
+		randomCompound = random.nextInt(numFiltered);
+		SwingTestUtil.moveToList(compoundList, randomCompound);
+
+		SwingTestUtil.waitForGUI(100);
+		SwingTestUtil.pressKey(viewer, KeyEvent.VK_D, false, true);
+		SwingTestUtil.waitWhileBlocked(viewer, "computing distance", false);
+
+		SwingTestUtil.waitForGUI(100);
+		JComboBox featureCombo = SwingTestUtil.getOnlyComboBox(viewer, true);
+		String s = featureCombo.getSelectedItem().toString();
+		Assert.assertTrue(s + " != Euclidean distance to ...", s.startsWith("Euclidean distance to "));
+
+		ClickableLabel lab = SwingTestUtil.getVisibleClickableLabel(viewer, SwingConstants.TOP);
+		SwingTestUtil.clickXButton(lab);
+		SwingTestUtil.waitWhileBlocked(viewer, "wait for remove filter", false);
+
+		SwingTestUtil.waitForGUI(100);
+		Assert.assertEquals(compoundList.getModel().getSize(), numCompounds);
+		featureCombo.setSelectedIndex(1);
+		s = featureCombo.getSelectedItem().toString();
+		Assert.assertTrue(s + " != Cluster", s.equals("Cluster"));
+
+		SwingTestUtil.waitForGUI(100);
+		lab = SwingTestUtil.getVisibleClickableLabel(viewer, SwingConstants.TOP);
+		SwingTestUtil.clickXButton(lab);
+		SwingTestUtil.waitWhileBlocked(viewer, "deslect single compound selection", false);
+		SwingTestUtil.waitWhileBlocked(viewer, "computing distance", false);
+
+		SwingTestUtil.waitForGUI(100);
+		Assert.assertFalse(compoundList.isShowing());
+	}
 	//	@Test
 	//	public void test2Export()
 	//	{

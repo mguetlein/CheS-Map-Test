@@ -6,11 +6,15 @@ import gui.swing.ComponentFactory.ClickableLabel;
 
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.Frame;
 import java.awt.Point;
 import java.awt.Robot;
 import java.awt.Window;
 import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import javax.swing.AbstractButton;
@@ -267,48 +271,61 @@ public class SwingTestUtil
 
 	public static JComboBox<?> getOnlyComboBox(Container owner)
 	{
-		return (JComboBox<?>) getOnlyComponent(owner, JComboBox.class);
+		return getOnlyComboBox(owner, false);
 	}
 
-	public static ClickableLabel getVisibleClickableLabel(Container owner, int swingConstantOrientation)
+	public static JComboBox<?> getOnlyComboBox(Container owner, boolean onlyVisible)
 	{
-		ClickableLabel l = null;
-		for (JComponent c : getComponents(owner, ClickableLabel.class))
+		return (JComboBox<?>) getOnlyComponent(owner, JComboBox.class, onlyVisible);
+	}
+
+	public static ClickableLabel getVisibleClickableLabel(Container owner, final int swingConstantOrientation)
+	{
+		List<JComponent> list = getComponents(owner, ClickableLabel.class, true);
+		if (list.size() == 0)
+			return null;
+		Collections.sort(list, new Comparator<JComponent>()
 		{
-			if (c.isShowing())
+			@Override
+			public int compare(JComponent o1, JComponent o2)
 			{
-				if (l != null)
-				{
-					if (swingConstantOrientation == SwingConstants.TOP)
-						l = (ClickableLabel) ((l.getBounds().y < c.getBounds().y) ? l : c);
-					else
-						throw new IllegalStateException();
-				}
+				if (swingConstantOrientation == SwingConstants.TOP)
+					return o1.getLocationOnScreen().y - o2.getLocationOnScreen().y;
 				else
-					l = (ClickableLabel) c;
+					throw new IllegalStateException();
 			}
-		}
-		return l;
+		});
+		return (ClickableLabel) list.get(0);
 	}
 
 	private static JComponent getOnlyComponent(Container owner, Class<?> clazz)
 	{
-		List<JComponent> list = getComponents(owner, clazz);
+		return getOnlyComponent(owner, clazz, false);
+	}
+
+	private static JComponent getOnlyComponent(Container owner, Class<?> clazz, boolean onlyVisible)
+	{
+		List<JComponent> list = getComponents(owner, clazz, onlyVisible);
 		if (list.size() != 1)
-			throw new IllegalStateException("num compounds found " + list.size());
+			throw new IllegalStateException("num " + (onlyVisible ? "visible " : "") + "compounds found " + list.size());
 		return list.get(0);
 	}
 
 	public static List<JComponent> getComponents(Container owner, Class<?> clazz)
 	{
+		return getComponents(owner, clazz, false);
+	}
+
+	public static List<JComponent> getComponents(Container owner, Class<?> clazz, boolean onlyVisible)
+	{
 		List<JComponent> list = new ArrayList<JComponent>();
 		for (Component c : owner.getComponents())
 		{
-			if (clazz.isInstance(c))
+			if (clazz.isInstance(c) && (!onlyVisible || c.isShowing()))
 				list.add((JComponent) c);
 			else if (c instanceof JComponent)
 			{
-				for (JComponent b : getComponents((JComponent) c, clazz))
+				for (JComponent b : getComponents((JComponent) c, clazz, onlyVisible))
 					list.add(b);
 			}
 		}
@@ -317,6 +334,11 @@ public class SwingTestUtil
 
 	public static void clickList(JList<?> list, int index)
 	{
+		clickList(list, index, false);
+	}
+
+	public static void clickList(JList<?> list, int index, boolean ctrlPressed)
+	{
 		try
 		{
 			Robot r = new Robot(ScreenUtil.getGraphicsDevice(ScreenUtil.getScreen((Window) list.getTopLevelAncestor())));
@@ -324,8 +346,50 @@ public class SwingTestUtil
 			Point p2 = list.indexToLocation(index);
 			r.mouseMove(p.x + p2.x + 5, p.y + p2.y + 5);
 			waitForGUI(250);
+			if (ctrlPressed)
+				r.keyPress(KeyEvent.VK_CONTROL);
 			r.mousePress(InputEvent.BUTTON1_MASK);
 			r.mouseRelease(InputEvent.BUTTON1_MASK);
+			if (ctrlPressed)
+				r.keyRelease(KeyEvent.VK_CONTROL);
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
+	}
+
+	public static void moveToList(JList<?> list, int index)
+	{
+		try
+		{
+			Robot r = new Robot(ScreenUtil.getGraphicsDevice(ScreenUtil.getScreen((Window) list.getTopLevelAncestor())));
+			Point p = list.getLocationOnScreen();
+			Point p2 = list.indexToLocation(index);
+			r.mouseMove(p.x + p2.x + 5, p.y + p2.y + 5);
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
+	}
+
+	public static void pressKey(Frame owner, int key, boolean ctrlDown, boolean altDown)
+	{
+		try
+		{
+			Robot r = new Robot(ScreenUtil.getGraphicsDevice(ScreenUtil.getScreen(owner)));
+			if (ctrlDown)
+				r.keyPress(KeyEvent.VK_CONTROL);
+			if (altDown)
+				r.keyPress(KeyEvent.VK_ALT);
+			r.keyPress(key);
+			r.keyRelease(key);
+			if (altDown)
+				r.keyRelease(KeyEvent.VK_ALT);
+			if (ctrlDown)
+				r.keyRelease(KeyEvent.VK_CONTROL);
+
 		}
 		catch (Exception e)
 		{
