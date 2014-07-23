@@ -540,7 +540,7 @@ public class MappingAndExportTest
 									System.err.println("skipping cluster - embedding combination");
 								else
 								{
-									DescriptorSelection feats = new DescriptorSelection(feat.shortName,
+									DescriptorSelection feats = DescriptorSelection.select(feat.shortName,
 											data.integratedFeature, null, null, null);
 									FragmentSettings frags = null;
 									if (feat.minFreq != null)

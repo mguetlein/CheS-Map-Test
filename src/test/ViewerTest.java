@@ -60,7 +60,7 @@ public class ViewerTest
 			LaunchCheSMapper.init();
 			LaunchCheSMapper.setExitOnClose(false);
 			Settings.TOP_LEVEL_FRAME_SCREEN = 0;
-			Properties props = MappingWorkflow.createMappingWorkflow(DATA_DIR + dataset, new DescriptorSelection(
+			Properties props = MappingWorkflow.createMappingWorkflow(DATA_DIR + dataset, DescriptorSelection.select(
 					PropertySetProvider.PropertySetShortcut.integrated, "logD,rgyr,HCPSA,fROTB", null, null, null),
 					null, WekaClusterer.WEKA_CLUSTERER[0], WekaPCA3DEmbedder.INSTANCE);
 			final CheSMapping mapping = MappingWorkflow.createMappingFromMappingWorkflow(props, "");
