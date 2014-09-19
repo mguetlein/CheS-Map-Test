@@ -14,9 +14,10 @@ import java.io.File;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
+import javax.swing.JFileChooser;
 import javax.swing.JList;
 import javax.swing.JRadioButton;
-import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 
 import main.Settings;
 
@@ -98,44 +99,47 @@ public class WizardTest
 		SwingTestUtil.waitForGUI(50);
 	}
 
+	public static void selectFile(DatasetWizardPanel panel, String file)
+	{
+		final JButton buttonOpen = SwingTestUtil.getButton(panel, "Open file");
+		SwingUtilities.invokeLater(new Runnable()
+		{
+			@Override
+			public void run()
+			{
+				buttonOpen.doClick();
+			}
+		});
+		SwingTestUtil.waitForGUI(50);
+
+		JFileChooser fc = SwingTestUtil.getFileChooser();
+		fc.setSelectedFile(new File(file));
+		SwingTestUtil.waitForGUI(50);
+		fc.approveSelection();
+	}
+
 	@Test
 	public void test1DatasetPanel()
 	{
-		DatasetWizardPanel panel = (DatasetWizardPanel) wizard.getCurrentPanel();
-		JTextField textField = SwingTestUtil.getOnlyTextField(panel);
-		Assert.assertTrue(textField.getText().length() == 0);
-		JButton buttonLoad = SwingTestUtil.getButton(panel, "Load Dataset");
-		Assert.assertFalse(buttonLoad.isEnabled());
-
-		SwingTestUtil.setText(textField, "jklsfdjklajklsfdauioes");
 		Assert.assertFalse(wizard.isBlocked());
-		Assert.assertTrue(buttonLoad.isEnabled());
+		DatasetWizardPanel panel = (DatasetWizardPanel) wizard.getCurrentPanel();
+
+		selectFile(panel, "jklsfdjklajklsfdauioes");
 		Assert.assertFalse(nextButton.isEnabled());
-		SwingTestUtil.clickButton(buttonLoad);
-		Assert.assertTrue(wizard.isBlocked());
 		waitForLoadingDialogToClose();
 		SwingTestUtil.assertErrorDialog(wizard, "ERROR - Loading dataset file", "not found");
 		SwingTestUtil.waitWhileBlocked(wizard, "loading non existing file", false);
 
-		SwingTestUtil.setText(textField, DATA_DIR + "broken_smiles.csv");
-		Assert.assertFalse(wizard.isBlocked());
-		Assert.assertTrue(buttonLoad.isEnabled());
+		selectFile(panel, DATA_DIR + "broken_smiles.csv");
 		Assert.assertFalse(nextButton.isEnabled());
-		SwingTestUtil.clickButton(buttonLoad);
-		Assert.assertTrue(wizard.isBlocked());
 		waitForLoadingDialogToClose();
 		SwingTestUtil.assertErrorDialog(wizard, "ERROR - Loading dataset file", "illegal smiles");
 		SwingTestUtil.waitWhileBlocked(wizard, "loading errornous file", false);
 
-		SwingTestUtil.setText(textField, DATA_DIR + "sdf_with_broken_compound.sdf");
+		selectFile(panel, DATA_DIR + "sdf_with_broken_compound.sdf");
 		if (new File(DATA_DIR + "sdf_with_broken_compound_cleaned.sdf").exists())
 			new File(DATA_DIR + "sdf_with_broken_compound_cleaned.sdf").delete();
 		Assert.assertFalse(new File(DATA_DIR + "sdf_with_broken_compound_cleaned.sdf").exists());
-		Assert.assertFalse(wizard.isBlocked());
-		Assert.assertTrue(buttonLoad.isEnabled());
-		Assert.assertFalse(nextButton.isEnabled());
-		SwingTestUtil.clickButton(buttonLoad);
-		Assert.assertTrue(wizard.isBlocked());
 		waitForLoadingDialogToClose();
 		Assert.assertTrue(wizard.isBlocked());
 		SwingTestUtil.waitForGUI(1000);
@@ -158,19 +162,13 @@ public class WizardTest
 		Assert.assertNotNull(b3);
 		SwingTestUtil.clickButton(b3);
 		waitForLoadingDialogToClose();
-		Assert.assertFalse(buttonLoad.isEnabled());
 		Assert.assertTrue(nextButton.isEnabled());
 		Assert.assertTrue(new File(DATA_DIR + "sdf_with_broken_compound_cleaned.sdf").exists());
 
 		Assert.assertFalse(wizard.isBlocked());
-		SwingTestUtil.setText(textField, DATA_DIR + "basicTestSet.sdf");
-		Assert.assertFalse(wizard.isBlocked());
-		Assert.assertTrue(buttonLoad.isEnabled());
-		SwingTestUtil.clickButton(buttonLoad);
-		Assert.assertTrue(wizard.isBlocked());
+		selectFile(panel, DATA_DIR + "basicTestSet.sdf");
 		waitForLoadingDialogToClose();
 		Assert.assertFalse(wizard.isBlocked());
-		Assert.assertFalse(buttonLoad.isEnabled());
 		Assert.assertTrue(nextButton.isEnabled());
 
 		nextButton.doClick();

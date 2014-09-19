@@ -23,6 +23,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -464,6 +465,15 @@ public class SwingTestUtil
 			SwingTestUtil.waitForGUI(50);
 			System.out.println(msg);
 		}
+	}
+
+	public static JFileChooser getFileChooser()
+	{
+		for (Window w : Window.getWindows())
+			if (w instanceof JDialog && w.isShowing())
+				if (((JDialog) w).getContentPane().getComponent(0) instanceof JFileChooser)
+					return (JFileChooser) ((JDialog) w).getContentPane().getComponent(0);
+		throw new IllegalStateException("no file chooser found!");
 	}
 
 }

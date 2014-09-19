@@ -26,7 +26,6 @@ import javax.swing.JDialog;
 import javax.swing.JList;
 import javax.swing.JRadioButton;
 import javax.swing.JSpinner;
-import javax.swing.JTextField;
 
 import main.CheSMapping;
 import main.PropHandler;
@@ -165,15 +164,7 @@ public class MappingCreator
 		JButton nextButton = SwingTestUtil.getButton(wwd, "Next");
 
 		// dataset
-		JTextField textField = SwingTestUtil.getOnlyTextField(wwd.getCurrentPanel());
-		JButton buttonLoad = SwingTestUtil.getButton(wwd.getCurrentPanel(), "Load Dataset");
-		SwingTestUtil.setText(textField, dataset);
-		SwingTestUtil.waitForGUI(50);
-		if (buttonLoad.isEnabled())
-		{
-			SwingTestUtil.clickButton(buttonLoad);
-			WizardTest.waitForLoadingDialogToClose(wwd);
-		}
+		WizardTest.selectFile((DatasetWizardPanel) wwd.getCurrentPanel(), dataset);
 		SwingTestUtil.waitWhileBlocked(wwd, "wait while blocked, loading dataset", false);
 		DatasetFile datasetFile = ((DatasetWizardPanel) wwd.getCurrentPanel()).getDatasetFile();
 		Assert.assertNotNull(datasetFile);
