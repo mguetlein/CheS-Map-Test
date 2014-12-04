@@ -1,15 +1,10 @@
 package util;
 
-import gui.CheSMapperWizard;
-import gui.ClusterWizardPanel;
-import gui.DatasetWizardPanel;
-import gui.EmbedWizardPanel;
 import gui.LinkButton;
 import gui.Selector;
 import gui.WizardPanel;
 import gui.property.Property;
 import gui.property.PropertyComponent;
-import gui.wizard.AbstractWizardPanel;
 
 import java.io.File;
 import java.util.HashSet;
@@ -27,29 +22,33 @@ import javax.swing.JList;
 import javax.swing.JRadioButton;
 import javax.swing.JSpinner;
 
-import main.CheSMapping;
-import main.PropHandler;
-
+import org.chesmapper.map.alg.Algorithm;
+import org.chesmapper.map.alg.align3d.NoAligner;
+import org.chesmapper.map.alg.build3d.UseOrigStructures;
+import org.chesmapper.map.alg.cluster.DatasetClusterer;
+import org.chesmapper.map.alg.embed3d.ThreeDEmbedder;
+import org.chesmapper.map.data.DatasetFile;
+import org.chesmapper.map.data.fragments.MatchEngine;
+import org.chesmapper.map.dataInterface.CompoundPropertySet;
+import org.chesmapper.map.gui.CheSMapperWizard;
+import org.chesmapper.map.gui.ClusterWizardPanel;
+import org.chesmapper.map.gui.DatasetWizardPanel;
+import org.chesmapper.map.gui.EmbedWizardPanel;
+import org.chesmapper.map.gui.wizard.AbstractWizardPanel;
+import org.chesmapper.map.main.CheSMapping;
+import org.chesmapper.map.main.PropHandler;
+import org.chesmapper.map.property.PropertySetCategory;
+import org.chesmapper.map.property.PropertySetProvider;
+import org.chesmapper.map.workflow.ClustererProvider;
+import org.chesmapper.map.workflow.DatasetLoader;
+import org.chesmapper.map.workflow.EmbedderProvider;
+import org.chesmapper.map.workflow.MappingWorkflow;
+import org.chesmapper.map.workflow.SimpleViewAlgorithmProvider;
+import org.chesmapper.map.workflow.MappingWorkflow.DescriptorSelection;
+import org.chesmapper.map.workflow.MappingWorkflow.FragmentSettings;
 import org.junit.Assert;
 
-import property.PropertySetCategory;
-import property.PropertySetProvider;
 import test.WizardTest;
-import workflow.ClustererProvider;
-import workflow.DatasetLoader;
-import workflow.EmbedderProvider;
-import workflow.MappingWorkflow;
-import workflow.MappingWorkflow.DescriptorSelection;
-import workflow.MappingWorkflow.FragmentSettings;
-import workflow.SimpleViewAlgorithmProvider;
-import alg.Algorithm;
-import alg.align3d.NoAligner;
-import alg.build3d.UseOrigStructures;
-import alg.cluster.DatasetClusterer;
-import alg.embed3d.ThreeDEmbedder;
-import data.DatasetFile;
-import data.fragments.MatchEngine;
-import dataInterface.CompoundPropertySet;
 
 public class MappingCreator
 {

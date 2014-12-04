@@ -1,8 +1,6 @@
 package test;
 
 import gui.BlockableFrame;
-import gui.LaunchCheSMapper;
-import gui.swing.ComponentFactory.ClickableLabel;
 
 import java.awt.Point;
 import java.awt.Robot;
@@ -22,24 +20,25 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingConstants;
 
-import main.CheSMapping;
-import main.Settings;
-
+import org.chesmapper.map.alg.cluster.WekaClusterer;
+import org.chesmapper.map.alg.embed3d.WekaPCA3DEmbedder;
+import org.chesmapper.map.main.CheSMapping;
+import org.chesmapper.map.main.Settings;
+import org.chesmapper.map.property.PropertySetProvider;
+import org.chesmapper.map.workflow.MappingWorkflow;
+import org.chesmapper.map.workflow.MappingWorkflow.DescriptorSelection;
+import org.chesmapper.view.gui.LaunchCheSMapper;
+import org.chesmapper.view.gui.swing.ComponentFactory.ClickableLabel;
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
-import property.PropertySetProvider;
 import util.ArrayUtil;
 import util.ListUtil;
 import util.ScreenUtil;
 import util.SwingTestUtil;
 import util.ThreadUtil;
-import workflow.MappingWorkflow;
-import workflow.MappingWorkflow.DescriptorSelection;
-import alg.cluster.WekaClusterer;
-import alg.embed3d.WekaPCA3DEmbedder;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class ViewerTest

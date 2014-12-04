@@ -12,37 +12,40 @@ public class TestLauncher
 {
 	public static enum MappingTest
 	{
-		single, wizard, cache, all, debug
+		gui_wizard, gui_viewer, gui_both, mapping_single, mapping_wizard, mapping_cache, mapping_all, mapping_debug,
+		cdk_test
 	}
 
 	public static MappingTest MAPPING_TEST;// = MappingTest.all_gui;
 
 	public static void main(String[] args)
 	{
-		if (args == null || args.length != 2)
+		MappingTest test = null;
+		try
 		{
-			System.err
-					.println("first param: gui|mapping, second param for gui: wizard|viewer|both, second param for mapping: "
-							+ ArrayUtil.toString(MappingTest.values(), "|", "", "", ""));
+			test = MappingTest.valueOf(args[0]);
+		}
+		catch (Exception e)
+		{
+			System.err.println("possible params: " + ArrayUtil.toString(MappingTest.values(), "|", "", "", ""));
 			System.exit(1);
 		}
 		JUnitCore junit = new JUnitCore();
 		junit.addListener(new TextListener(System.out));
 		Result result = null;
-		if (args[0].equals("gui"))
+		if (test == MappingTest.gui_both)
+			result = junit.run(WizardTest.class, ViewerTest.class);
+		else if (test == MappingTest.gui_wizard)
+			result = junit.run(WizardTest.class);
+		else if (test == MappingTest.gui_viewer)
+			result = junit.run(ViewerTest.class);
+		else if (args[0].startsWith("mapping_"))
 		{
-			if (args[1].equals("both"))
-				result = junit.run(WizardTest.class, ViewerTest.class);
-			else if (args[1].equals("wizard"))
-				result = junit.run(WizardTest.class);
-			else if (args[1].equals("viewer"))
-				result = junit.run(ViewerTest.class);
-		}
-		else if (args[0].equals("mapping"))
-		{
-			MAPPING_TEST = MappingTest.valueOf(args[1]);
+			MAPPING_TEST = test;
 			result = junit.run(MappingAndExportTest.class);
 		}
+		else if (test == MappingTest.cdk_test)
+			result = junit.run(CDKTest.class);
 		System.out.println("");
 		System.out.println("Number of test failures: " + result.getFailureCount() + ", Runtime: "
 				+ TimeFormatUtil.format(result.getRunTime()));

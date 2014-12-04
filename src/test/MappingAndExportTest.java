@@ -1,6 +1,5 @@
 package test;
 
-import gui.LaunchCheSMapper;
 import gui.property.Property;
 import io.SDFUtil;
 
@@ -12,18 +11,40 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
-import main.BinHandler;
-import main.CheSMapping;
-import main.Settings;
-
+import org.chesmapper.map.alg.Algorithm;
+import org.chesmapper.map.alg.cluster.DatasetClusterer;
+import org.chesmapper.map.alg.cluster.NoClusterer;
+import org.chesmapper.map.alg.cluster.r.DynamicTreeCutHierarchicalRClusterer;
+import org.chesmapper.map.alg.embed3d.AbstractRTo3DEmbedder;
+import org.chesmapper.map.alg.embed3d.Random3DEmbedder;
+import org.chesmapper.map.alg.embed3d.ThreeDEmbedder;
+import org.chesmapper.map.alg.embed3d.WekaPCA3DEmbedder;
+import org.chesmapper.map.alg.embed3d.r.Sammon3DEmbedder;
+import org.chesmapper.map.data.ClusteringData;
+import org.chesmapper.map.data.DatasetFile;
+import org.chesmapper.map.data.fragments.MatchEngine;
+import org.chesmapper.map.dataInterface.CompoundPropertySet;
+import org.chesmapper.map.dataInterface.CompoundPropertyUtil;
+import org.chesmapper.map.dataInterface.FragmentPropertySet;
+import org.chesmapper.map.dataInterface.CompoundPropertySet.Type;
+import org.chesmapper.map.main.BinHandler;
+import org.chesmapper.map.main.CheSMapping;
+import org.chesmapper.map.main.Settings;
+import org.chesmapper.map.property.CDKFingerprintSet;
+import org.chesmapper.map.property.FminerPropertySet;
+import org.chesmapper.map.property.OBFingerprintSet;
+import org.chesmapper.map.property.PropertySetProvider;
+import org.chesmapper.map.property.PropertySetProvider.PropertySetShortcut;
+import org.chesmapper.map.workflow.ClustererProvider;
+import org.chesmapper.map.workflow.MappingWorkflow.DescriptorSelection;
+import org.chesmapper.map.workflow.MappingWorkflow.FragmentSettings;
+import org.chesmapper.view.cluster.Clustering;
+import org.chesmapper.view.cluster.ClusteringImpl;
+import org.chesmapper.view.cluster.ExportData;
+import org.chesmapper.view.gui.LaunchCheSMapper;
 import org.junit.Assert;
 import org.junit.Test;
 
-import property.CDKFingerprintSet;
-import property.FminerPropertySet;
-import property.OBFingerprintSet;
-import property.PropertySetProvider;
-import property.PropertySetProvider.PropertySetShortcut;
 import util.ArrayUtil;
 import util.DoubleKeyHashMap;
 import util.FileUtil;
@@ -34,28 +55,6 @@ import util.MappingCreator.IllegalSettingException;
 import util.MappingCreator.Mode;
 import util.ObjectUtil;
 import util.ThreadUtil;
-import workflow.ClustererProvider;
-import workflow.MappingWorkflow.DescriptorSelection;
-import workflow.MappingWorkflow.FragmentSettings;
-import alg.Algorithm;
-import alg.cluster.DatasetClusterer;
-import alg.cluster.NoClusterer;
-import alg.cluster.r.DynamicTreeCutHierarchicalRClusterer;
-import alg.embed3d.AbstractRTo3DEmbedder;
-import alg.embed3d.Random3DEmbedder;
-import alg.embed3d.ThreeDEmbedder;
-import alg.embed3d.WekaPCA3DEmbedder;
-import alg.embed3d.r.Sammon3DEmbedder;
-import cluster.Clustering;
-import cluster.ClusteringImpl;
-import cluster.ExportData;
-import data.ClusteringData;
-import data.DatasetFile;
-import data.fragments.MatchEngine;
-import dataInterface.CompoundPropertySet;
-import dataInterface.CompoundPropertySet.Type;
-import dataInterface.CompoundPropertyUtil;
-import dataInterface.FragmentPropertySet;
 
 public class MappingAndExportTest
 {
@@ -186,7 +185,7 @@ public class MappingAndExportTest
 		int minFreqFew[] = new int[] { 0, 2 };
 		MatchEngine matchEnginesFew[] = new MatchEngine[] { MatchEngine.OpenBabel };
 
-		if (TestLauncher.MAPPING_TEST == TestLauncher.MappingTest.single)
+		if (TestLauncher.MAPPING_TEST == TestLauncher.MappingTest.mapping_single)
 		{
 			// check if test is running
 			datasets = new DatasetConfig[] { D_CSV, D_INCHI };
@@ -198,7 +197,7 @@ public class MappingAndExportTest
 			mappingMode = new MappingCreator.Mode[] { MappingCreator.Mode.DirectlyUseAlgorithms };
 			testCaching = false;
 		}
-		else if (TestLauncher.MAPPING_TEST == TestLauncher.MappingTest.wizard)
+		else if (TestLauncher.MAPPING_TEST == TestLauncher.MappingTest.mapping_wizard)
 		{
 			// checks if wizard configuration produces correct results
 			// mapping1: from command line (stores it to global props)
@@ -215,7 +214,7 @@ public class MappingAndExportTest
 			mappingMode = new Mode[] { Mode.StoreAndLoadProps, Mode.RestartWizardWithProps, Mode.ConfigureWizard };
 			testCaching = false;
 		}
-		else if (TestLauncher.MAPPING_TEST == TestLauncher.MappingTest.cache)
+		else if (TestLauncher.MAPPING_TEST == TestLauncher.MappingTest.mapping_cache)
 		{
 			// checks if re-runing algorithms and caching produces correct results 
 			// mapping1: from command line (stores it to global props) w/o caching
@@ -231,7 +230,7 @@ public class MappingAndExportTest
 			mappingMode = new Mode[] { Mode.StoreAndLoadProps, Mode.DirectlyUseAlgorithms, Mode.DirectlyUseAlgorithms };
 			testCaching = true;
 		}
-		else if (TestLauncher.MAPPING_TEST == TestLauncher.MappingTest.all)
+		else if (TestLauncher.MAPPING_TEST == TestLauncher.MappingTest.mapping_all)
 		{
 			// combination of wizard and cache check
 			// with two more datasets and more features
@@ -245,7 +244,7 @@ public class MappingAndExportTest
 					Mode.RestartWizardWithProps, Mode.ConfigureWizard };
 			testCaching = true;
 		}
-		else if (TestLauncher.MAPPING_TEST == TestLauncher.MappingTest.debug)
+		else if (TestLauncher.MAPPING_TEST == TestLauncher.MappingTest.mapping_debug)
 		{
 			throw new IllegalStateException();
 		}

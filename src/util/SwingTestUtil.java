@@ -2,7 +2,6 @@ package util;
 
 import gui.BlockableFrame;
 import gui.Selector;
-import gui.swing.ComponentFactory.ClickableLabel;
 
 import java.awt.Component;
 import java.awt.Container;
@@ -38,6 +37,7 @@ import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.text.JTextComponent;
 
+import org.chesmapper.view.gui.swing.ComponentFactory.ClickableLabel;
 import org.junit.Assert;
 
 public class SwingTestUtil

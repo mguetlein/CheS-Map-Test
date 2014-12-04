@@ -1,13 +1,5 @@
 package test;
 
-import gui.AlignWizardPanel;
-import gui.Build3DWizardPanel;
-import gui.CheSMapperWizard;
-import gui.ClusterWizardPanel;
-import gui.DatasetWizardPanel;
-import gui.EmbedWizardPanel;
-import gui.FeatureWizardPanel;
-import gui.LaunchCheSMapper;
 import gui.Selector;
 
 import java.io.File;
@@ -19,22 +11,29 @@ import javax.swing.JList;
 import javax.swing.JRadioButton;
 import javax.swing.SwingUtilities;
 
-import main.Settings;
-
+import org.chesmapper.map.alg.align3d.ThreeDAligner;
+import org.chesmapper.map.alg.build3d.ThreeDBuilder;
+import org.chesmapper.map.alg.cluster.DatasetClusterer;
+import org.chesmapper.map.alg.embed3d.ThreeDEmbedder;
+import org.chesmapper.map.dataInterface.CompoundPropertySet;
+import org.chesmapper.map.gui.AlignWizardPanel;
+import org.chesmapper.map.gui.Build3DWizardPanel;
+import org.chesmapper.map.gui.CheSMapperWizard;
+import org.chesmapper.map.gui.ClusterWizardPanel;
+import org.chesmapper.map.gui.DatasetWizardPanel;
+import org.chesmapper.map.gui.EmbedWizardPanel;
+import org.chesmapper.map.gui.FeatureWizardPanel;
+import org.chesmapper.map.main.Settings;
+import org.chesmapper.map.property.PropertySetCategory;
+import org.chesmapper.map.property.PropertySetProvider;
+import org.chesmapper.view.gui.LaunchCheSMapper;
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
-import property.PropertySetCategory;
-import property.PropertySetProvider;
 import util.SwingTestUtil;
 import util.ThreadUtil;
-import alg.align3d.ThreeDAligner;
-import alg.build3d.ThreeDBuilder;
-import alg.cluster.DatasetClusterer;
-import alg.embed3d.ThreeDEmbedder;
-import dataInterface.CompoundPropertySet;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class WizardTest
