@@ -16,9 +16,8 @@ import org.junit.Assert;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
-
-import util.ArrayUtil;
-import util.FileUtil;
+import org.mg.javalib.util.ArrayUtil;
+import org.mg.javalib.util.FileUtil;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class CDKTest

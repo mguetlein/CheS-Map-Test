@@ -1,7 +1,5 @@
 package test;
 
-import gui.BlockableFrame;
-
 import java.awt.Point;
 import java.awt.Robot;
 import java.awt.Window;
@@ -33,12 +31,13 @@ import org.junit.Assert;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
+import org.mg.javalib.gui.BlockableFrame;
+import org.mg.javalib.util.ArrayUtil;
+import org.mg.javalib.util.ListUtil;
+import org.mg.javalib.util.ScreenUtil;
+import org.mg.javalib.util.ThreadUtil;
 
-import util.ArrayUtil;
-import util.ListUtil;
-import util.ScreenUtil;
 import util.SwingTestUtil;
-import util.ThreadUtil;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class ViewerTest

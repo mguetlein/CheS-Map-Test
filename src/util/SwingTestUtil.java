@@ -1,8 +1,5 @@
 package util;
 
-import gui.BlockableFrame;
-import gui.Selector;
-
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Frame;
@@ -39,6 +36,11 @@ import javax.swing.text.JTextComponent;
 
 import org.chesmapper.view.gui.swing.ComponentFactory.ClickableLabel;
 import org.junit.Assert;
+import org.mg.javalib.gui.BlockableFrame;
+import org.mg.javalib.gui.Selector;
+import org.mg.javalib.util.ScreenUtil;
+import org.mg.javalib.util.SwingUtil;
+import org.mg.javalib.util.ThreadUtil;
 
 public class SwingTestUtil
 {

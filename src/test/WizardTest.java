@@ -1,7 +1,5 @@
 package test;
 
-import gui.Selector;
-
 import java.io.File;
 
 import javax.swing.JButton;
@@ -31,9 +29,10 @@ import org.junit.Assert;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
+import org.mg.javalib.gui.Selector;
+import org.mg.javalib.util.ThreadUtil;
 
 import util.SwingTestUtil;
-import util.ThreadUtil;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class WizardTest

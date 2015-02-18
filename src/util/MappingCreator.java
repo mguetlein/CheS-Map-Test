@@ -1,11 +1,5 @@
 package util;
 
-import gui.LinkButton;
-import gui.Selector;
-import gui.WizardPanel;
-import gui.property.Property;
-import gui.property.PropertyComponent;
-
 import java.io.File;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -47,6 +41,16 @@ import org.chesmapper.map.workflow.SimpleViewAlgorithmProvider;
 import org.chesmapper.map.workflow.MappingWorkflow.DescriptorSelection;
 import org.chesmapper.map.workflow.MappingWorkflow.FragmentSettings;
 import org.junit.Assert;
+import org.mg.javalib.gui.LinkButton;
+import org.mg.javalib.gui.Selector;
+import org.mg.javalib.gui.WizardPanel;
+import org.mg.javalib.gui.property.Property;
+import org.mg.javalib.gui.property.PropertyComponent;
+import org.mg.javalib.util.DoubleKeyHashMap;
+import org.mg.javalib.util.FileUtil;
+import org.mg.javalib.util.ListUtil;
+import org.mg.javalib.util.SwingUtil;
+import org.mg.javalib.util.ThreadUtil;
 
 import test.WizardTest;
 

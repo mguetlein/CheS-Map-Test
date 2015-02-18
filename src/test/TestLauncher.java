@@ -4,9 +4,8 @@ import org.junit.internal.TextListener;
 import org.junit.runner.JUnitCore;
 import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
-
-import util.ArrayUtil;
-import util.TimeFormatUtil;
+import org.mg.javalib.util.ArrayUtil;
+import org.mg.javalib.util.TimeFormatUtil;
 
 public class TestLauncher
 {

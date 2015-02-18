@@ -1,8 +1,5 @@
 package test;
 
-import gui.property.Property;
-import io.SDFUtil;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -44,17 +41,19 @@ import org.chesmapper.view.cluster.ExportData;
 import org.chesmapper.view.gui.LaunchCheSMapper;
 import org.junit.Assert;
 import org.junit.Test;
+import org.mg.javalib.gui.property.Property;
+import org.mg.javalib.io.SDFUtil;
+import org.mg.javalib.util.ArrayUtil;
+import org.mg.javalib.util.DoubleKeyHashMap;
+import org.mg.javalib.util.FileUtil;
+import org.mg.javalib.util.ListUtil;
+import org.mg.javalib.util.ObjectUtil;
+import org.mg.javalib.util.ThreadUtil;
+import org.mg.javalib.util.FileUtil.CSVFile;
 
-import util.ArrayUtil;
-import util.DoubleKeyHashMap;
-import util.FileUtil;
-import util.FileUtil.CSVFile;
-import util.ListUtil;
 import util.MappingCreator;
 import util.MappingCreator.IllegalSettingException;
 import util.MappingCreator.Mode;
-import util.ObjectUtil;
-import util.ThreadUtil;
 
 public class MappingAndExportTest
 {
